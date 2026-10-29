@@ -1,3 +1,4 @@
+import 'storyboard.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -58,7 +59,7 @@ class _StudioHomeState extends State<StudioHome> {
     const SizedBox(height: 18),
     tile('Imagem IA', 'Cria um conceito visual', Icons.image, () => setState(() {kind='Imagem';tab=1;})),
     tile('Vídeo IA', 'Prepara um vídeo cinematográfico', Icons.movie_creation, () => setState(() {kind='Vídeo';tab=1;})),
-    tile('LUMIN Cinema', 'Prepara cenas e storyboards', Icons.theaters, () => setState(() {kind='Cinema';tab=1;})),
+    tile('LUMIN Cinema', 'Editor de cenas e storyboards', Icons.theaters, () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const StoryboardScreen()))),
     const SizedBox(height: 16),
     const Text('Os pedidos são guardados localmente. Geração real ainda não ligada.',
       style: TextStyle(color: Colors.white60)),
