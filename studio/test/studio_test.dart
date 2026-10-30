@@ -11,6 +11,7 @@ void main() {
     await tester.pumpWidget(const LuminStudio());
     await tester.pumpAndSettle();
     expect(find.text('A tua criatividade, sem limites'), findsOneWidget);
+    await tester.ensureVisible(find.text('LUMIN Cinema'));
     await tester.tap(find.text('LUMIN Cinema'));
     await tester.pumpAndSettle();
     expect(find.text('Adicionar cena'), findsOneWidget);
@@ -29,8 +30,4 @@ void main() {
 class StoryboardTestHost extends StatelessWidget {
   const StoryboardTestHost({super.key});
   @override Widget build(BuildContext context) => const StoryboardScreen();
-}
-class _Editor extends StatelessWidget {
-  const _Editor();
-  @override Widget build(BuildContext context) => const StudioCinemaWrapper();
 }
