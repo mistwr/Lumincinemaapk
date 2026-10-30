@@ -45,6 +45,7 @@ class _StudioHomeState extends State<StudioHome> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList('drafts', drafts);
   }
+  @override void dispose() { prompt.dispose(); super.dispose(); }
   Widget tile(String title, String subtitle, IconData icon, VoidCallback onTap) =>
     Card(color: const Color(0xFF1A1B23), child: ListTile(
       contentPadding: const EdgeInsets.all(18),
