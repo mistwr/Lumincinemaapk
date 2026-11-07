@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#050505">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>LUMIN Filmes</title>
+<style>
+:root{--bg:#050505;--card:#13120f;--gold:#e7b95f;--gold2:#ffdda0;--txt:#f4efe6;--mut:#9d978d;--line:rgba(255,221,160,.13);--grn:#35d06f}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+body{padding-bottom:70px}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+header{position:sticky;top:0;z-index:20;padding:10px 14px 8px;padding-top:max(10px,env(safe-area-inset-top));background:linear-gradient(#050505,#050505f2 75%,#05050500)}
+.hd{display:flex;align-items:center;gap:10px}
+.brand{font-weight:900;letter-spacing:-.03em;font-size:19px;white-space:nowrap}.brand b{color:var(--gold2)}
+.search{margin-left:auto;flex:1 1 200px;max-width:340px;display:flex;align-items:center;background:#100f0c;border:1px solid var(--line);border-radius:999px;padding:0 12px}
+.search input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--txt);padding:9px 6px;font:inherit;font-size:14px}
+.tabs{display:flex;gap:6px;margin-top:10px;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;padding:7px 13px;border-radius:999px;border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--mut);outline:0}
+.tab.on{background:var(--gold);color:#1a1305;border-color:var(--gold)}
+.tab:focus{box-shadow:0 0 0 2px var(--gold2)}
+.toggle{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mut);margin-left:auto;flex:0 0 auto;padding:6px 10px;border-radius:999px;border:1px solid var(--line)}
+.toggle i{width:26px;height:15px;border-radius:9px;background:#333;position:relative;transition:.2s}
+.toggle i::after{content:"";position:absolute;left:2px;top:2px;width:11px;height:11px;border-radius:50%;background:#fff;transition:.2s}
+.toggle.on i{background:var(--grn)}.toggle.on i::after{left:13px}
+.hero{position:relative;margin:2px 14px 18px;border-radius:20px;overflow:hidden;min-height:250px;display:flex;align-items:flex-end;background:#111 center/cover}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#050505 4%,#050505b0 45%,transparent)}
+.hero .in{position:relative;z-index:1;padding:18px;max-width:600px}
+.badge{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.07em;color:#1a1305;background:var(--gold);border-radius:6px;padding:3px 7px;margin-bottom:8px}
+.badge.g{background:var(--grn)}
+.hero h1{font-size:clamp(24px,5vw,40px);letter-spacing:-.03em;line-height:1.05}
+.hero p{color:#d9d2c5;margin:8px 0 14px;font-size:14px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.b{padding:11px 16px;border-radius:12px;font-weight:800;font-size:14px;border:1px solid var(--line);background:#ffffff14;outline:0}
+.b.p{background:var(--gold);color:#1a1305;border-color:var(--gold)}
+.b:focus{box-shadow:0 0 0 3px var(--gold2)}
+.row{margin:0 0 16px}
+.rh{display:flex;align-items:baseline;justify-content:space-between;margin:0 14px 9px}
+.rh h2{font-size:16px;font-weight:800}
+.rh button{font-size:12.5px;color:var(--gold2);font-weight:700;outline:0;padding:4px}
+.rh button:focus{text-decoration:underline}
+.rail{display:flex;gap:9px;overflow-x:auto;padding:4px 14px 8px;scrollbar-width:none;min-height:150px}
+.rail::-webkit-scrollbar{display:none}
+.card{position:relative;flex:0 0 128px;text-align:left;border-radius:12px;overflow:hidden;background:var(--card);border:2px solid transparent;outline:0;transition:transform .15s,border-color .15s}
+.card:focus,.card:hover{border-color:var(--gold);transform:scale(1.04)}
+.card .im{aspect-ratio:2/3;background:#1a1813 center/cover}
+.card .t{padding:7px 8px 2px;font-size:12.5px;font-weight:700;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .y{padding:0 8px 8px;font-size:11px;color:var(--mut)}
+.card .fr{position:absolute;left:6px;top:6px;font-size:10px;font-weight:800;background:var(--grn);color:#04210f;border-radius:5px;padding:2px 5px}
+.card .lu{background:var(--gold);color:#1a1305}
+.card .pg{height:3px;background:#ffffff1a}.card .pg i{display:block;height:100%;background:var(--gold)}
+.sk{flex:0 0 128px;aspect-ratio:2/3.4;border-radius:12px;background:linear-gradient(90deg,#121110,#1c1a16,#121110);background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:9px;padding:0 14px}
+.grid .card{flex:auto}
+.more{display:block;margin:14px auto;padding:11px 20px}
+.empty{color:var(--mut);padding:30px 14px;text-align:center;font-size:14px}
+.ptitle{font-size:20px;font-weight:800;margin:4px 14px 12px;letter-spacing:-.02em}
+/* detail */
+.sheet{position:fixed;inset:0;z-index:40;background:#000c;display:none;align-items:flex-end;justify-content:center}
+.sheet.on{display:flex}
+.sh{width:min(720px,100%);max-height:94vh;overflow:auto;background:#0e0d0b;border:1px solid var(--line);border-radius:20px 20px 0 0;padding-bottom:max(18px,env(safe-area-inset-bottom))}
+.sh .cover{aspect-ratio:16/9;background:#111 center/cover;position:relative}
+.sh .cover::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#0e0d0b,transparent 55%)}
+.sh .cover iframe{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:2}
+.sh .x{position:absolute;right:10px;top:10px;width:38px;height:38px;border-radius:50%;background:#000b;font-size:16px;z-index:3;outline:0}
+.sh .x:focus{box-shadow:0 0 0 3px var(--gold2)}
+.sh .bd{padding:4px 16px 0}
+.sh h3{font-size:23px;letter-spacing:-.02em;line-height:1.1}
+.meta{color:var(--mut);font-size:13px;margin:7px 0 12px;display:flex;gap:8px;flex-wrap:wrap}
+.meta .r{color:var(--gold2);font-weight:700}
+.sh p.ov{font-size:14px;line-height:1.5;color:#ddd5c8;margin:12px 0}
+.sec{font-size:13px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 8px}
+.provs{display:flex;flex-wrap:wrap;gap:8px}
+.prov{display:flex;align-items:center;gap:8px;padding:6px 10px 6px 6px;border-radius:12px;background:#17150f;border:1px solid var(--line);font-size:13px;font-weight:700;outline:0}
+.prov img{width:34px;height:34px;border-radius:8px}
+.prov.free{border-color:#35d06f88}
+.prov:focus{box-shadow:0 0 0 3px var(--gold2)}
+.prov small{display:block;font-size:10.5px;color:var(--grn);font-weight:800}
+.prov.paid small{color:var(--mut)}
+.cast{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.cast div{flex:0 0 76px;text-align:center;font-size:11px;color:var(--mut)}
+.cast img,.cast span{display:block;width:60px;height:60px;border-radius:50%;object-fit:cover;margin:0 auto 5px;background:#1a1813}
+.cast b{display:block;color:var(--txt);font-size:11.5px;font-weight:700}
+.lic{font-size:11.5px;color:var(--mut);border-top:1px solid var(--line);margin-top:18px;padding-top:10px;line-height:1.5}
+/* player */
+#player{position:fixed;inset:0;z-index:60;background:#000;display:none}
+#player.on{display:block}
+#player video{width:100%;height:100%;background:#000}
+#player .top{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:10px;padding:12px;padding-top:max(12px,env(safe-area-inset-top));background:linear-gradient(#000c,transparent);transition:opacity .3s}
+#player .top button{width:42px;height:42px;border-radius:50%;background:#0008;font-size:18px}
+#player .top span{font-weight:700;font-size:15px}
+#player.idle .top{opacity:0}
+.spin{position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px;border:3px solid #ffffff33;border-top-color:var(--gold);border-radius:50%;animation:s 1s linear infinite;display:none}
+#player.load .spin{display:block}
+@keyframes s{to{transform:rotate(360deg)}}
+footer{color:var(--mut);font-size:11.5px;line-height:1.55;padding:14px;max-width:760px;display:flex;gap:12px;align-items:flex-start}
+footer img{width:70px;flex:0 0 auto;margin-top:2px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1c1a15;border:1px solid var(--line);padding:10px 16px;border-radius:12px;font-size:13px;z-index:90;display:none}
+@media(min-width:900px){.card,.sk{flex-basis:160px}.hero{min-height:380px}.grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hd">
+    <div class="brand">LUMIN <b>Filmes</b></div>
+    <label class="search">🔎<input id="q" type="search" placeholder="Filmes, séries, atores…" autocomplete="off" enterkeyhint="search"></label>
+  </div>
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-tab="home">Início</button>
+    <button class="tab" data-tab="movie">Filmes</button>
+    <button class="tab" data-tab="tv">Séries</button>
+    <button class="tab" data-tab="natal">🎄 Natal</button>
+    <button class="tab" data-tab="lumin">▶ Tocar já</button>
+    <button class="tab" data-tab="list">♥ A minha lista</button>
+    <button class="toggle on" id="freeT" title="Mostrar só o que é grátis em Portugal"><i></i>Só grátis</button>
+  </div>
+</header>
+
+<section class="hero" id="hero" style="display:none"></section>
+<main id="main"></main>
+
+<footer>
+  <img alt="TMDB" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 190 24'><defs><linearGradient id='g'><stop offset='0' stop-color='%2390cea1'/><stop offset='.56' stop-color='%233cbec9'/><stop offset='1' stop-color='%2300b3e5'/></linearGradient></defs><text x='0' y='19' font-family='Arial' font-weight='900' font-size='21' fill='url(%23g)'>TMDB</text></svg>">
+  <div>Este produto usa a API do TMDB mas não é aprovado nem certificado pelo TMDB. Dados de onde ver: JustWatch.
+  A LUMIN Filmes não aloja nem transmite filmes de terceiros. Mostra onde cada título está disponível legalmente e abre o serviço oficial.
+  Os filmes da secção "Tocar já" são de domínio público ou Creative Commons e passam a partir do Internet Archive.</div>
+</footer>
+
+<div class="sheet" id="sheet"><div class="sh" id="sh"></div></div>
+<div id="player"><video id="vid" controls playsinline preload="metadata"></video><div class="spin"></div>
+  <div class="top"><button id="back" aria-label="Voltar">←</button><span id="ptitle"></span></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= CONFIG ================= */
+const TMDB_TOKEN = "__TMDB_TOKEN__";
+const REGION = "PT", LANG = "pt-PT";
+const IMG = "https://image.tmdb.org/t/p/";
+const FREE = "free|ads";
+const LUMIN_FILMS = /*CATALOG*/[];
+
+/* ================= utils ================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const st = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d }catch{ return d } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)) }catch{} }
+};
+let freeOnly = st.get("lf_free", true);
+let myList = st.get("lf_list", []);           // [{type,id,title,poster,year}]
+let prog = st.get("lumin_filmes_prog", {});    // progresso dos filmes livres
+const cache = new Map();
+function toast(m){ const t=$("#toast"); t.textContent=m; t.style.display="block"; clearTimeout(t._t); t._t=setTimeout(()=>t.style.display="none",2500); }
+
+async function api(path, params={}){
+  const u = new URL("https://api.themoviedb.org/3/"+path);
+  for (const [k,v] of Object.entries({language:LANG,...params})) if (v!==undefined && v!=="") u.searchParams.set(k,v);
+  const key = u.toString();
+  if (cache.has(key)) return cache.get(key);
+  const p = fetch(key,{headers:{Authorization:"Bearer "+TMDB_TOKEN,accept:"application/json"}})
+    .then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); });
+  cache.set(key,p); p.catch(()=>cache.delete(key));
+  return p;
+}
+const discover = (type, extra={}, page=1) => api("discover/"+type, {
+  page, watch_region:REGION, include_adult:false, "vote_count.gte": extra["vote_count.gte"] ?? 20,
+  sort_by:"popularity.desc", ...(freeOnly?{with_watch_monetization_types:FREE}:{}), ...extra
+});
+
+/* ================= secções ================= */
+const SECTIONS = {
+  home: [
+    ["Populares grátis", "movie", {}],
+    ["Séries grátis", "tv", {}],
+    ["🎄 Natal em família", "movie", {with_keywords:"207317", without_genres:"27,53,80", "vote_count.gte":5}],
+    ["Família e animação", "movie", {with_genres:"10751"}],
+    ["Ação e aventura", "movie", {with_genres:"28"}],
+    ["Comédia", "movie", {with_genres:"35"}],
+    ["Mais bem avaliados", "movie", {sort_by:"vote_average.desc","vote_count.gte":800}],
+    ["Séries de crime e mistério", "tv", {with_genres:"80|9648"}],
+    ["Documentários", "movie", {with_genres:"99"}],
+  ],
+  movie: [
+    ["Em alta", "movie", {}],["Ação","movie",{with_genres:"28"}],["Comédia","movie",{with_genres:"35"}],
+    ["Drama","movie",{with_genres:"18"}],["Thriller","movie",{with_genres:"53"}],["Ficção científica","movie",{with_genres:"878"}],
+    ["Terror","movie",{with_genres:"27"}],["Romance","movie",{with_genres:"10749"}],["Animação","movie",{with_genres:"16"}],
+    ["Família","movie",{with_genres:"10751"}],["Clássicos (antes de 1980)","movie",{"primary_release_date.lte":"1979-12-31"}],
+    ["Documentários","movie",{with_genres:"99"}],["Cinema português","movie",{with_origin_country:"PT","vote_count.gte":3}],
+  ],
+  tv: [
+    ["Em alta","tv",{}],["Ação e aventura","tv",{with_genres:"10759"}],["Comédia","tv",{with_genres:"35"}],
+    ["Drama","tv",{with_genres:"18"}],["Crime","tv",{with_genres:"80"}],["Mistério","tv",{with_genres:"9648"}],
+    ["Ficção e fantasia","tv",{with_genres:"10765"}],["Animação","tv",{with_genres:"16"}],["Para miúdos","tv",{with_genres:"10762","vote_count.gte":3}],
+    ["Documentários","tv",{with_genres:"99"}],
+  ],
+  natal: [
+    ["Filmes de Natal","movie",{with_keywords:"207317",without_genres:"27,53,80","vote_count.gte":5}],
+    ["Natal animado","movie",{with_keywords:"207317",with_genres:"16","vote_count.gte":3}],
+    ["Comédias de Natal","movie",{with_keywords:"207317",with_genres:"35","vote_count.gte":5}],
+    ["Romance de Natal","movie",{with_keywords:"207317",with_genres:"10749","vote_count.gte":3}],
+    ["Séries e especiais de Natal","tv",{with_keywords:"207317","vote_count.gte":1}],
+  ],
+};
+
+let tab = "home";
+function norm(x, type){
+  type = x.media_type || type;
+  return { type, id:x.id, title: x.title||x.name, year:(x.release_date||x.first_air_date||"").slice(0,4),
+    poster: x.poster_path ? IMG+"w342"+x.poster_path : "", backdrop: x.backdrop_path ? IMG+"w1280"+x.backdrop_path : "",
+    overview:x.overview, vote:x.vote_average };
+}
+function card(it){
+  return `<button class="card" data-open="${it.type}:${it.id}">
+    ${freeOnly && it.type!=="lumin"?`<span class="fr">GRÁTIS</span>`:""}${it.type==="lumin"?`<span class="fr lu">TOCA JÁ</span>`:""}
+    <div class="im" style="background-image:url('${it.poster}')"></div>
+    ${it.pct?`<div class="pg"><i style="width:${it.pct}%"></i></div>`:""}
+    <div class="t">${esc(it.title)}</div><div class="y">${it.year||""}${it.vote?` · ★ ${it.vote.toFixed(1)}`:""}</div></button>`;
+}
+const skel = n => Array.from({length:n},()=>`<div class="sk"></div>`).join("");
+
+function luminItems(){
+  return LUMIN_FILMS.map(f=>({type:"lumin",id:f.id,title:f.title,year:f.year,poster:f.poster,
+    pct: prog[f.id]&&prog[f.id].t>0 ? Math.min(100,prog[f.id].t/f.dur*100) : 0}));
+}
+
+async function render(){
+  const main = $("#main"); window.scrollTo(0,0);
+  const q = $("#q").value.trim();
+  $("#hero").style.display = "none";
+  if (q) return renderSearch(q);
+  if (tab==="lumin"){
+    main.innerHTML = `<div class="ptitle">▶ Toca já na LUMIN</div><div class="grid">${luminItems().map(card).join("")}</div>
+      <p class="empty">Filmes de domínio público e Creative Commons que tocam diretamente no player LUMIN.</p>`;
+    return;
+  }
+  if (tab==="list"){
+    main.innerHTML = `<div class="ptitle">♥ A minha lista</div>` + (myList.length
+      ? `<div class="grid">${myList.map(card).join("")}</div>`
+      : `<p class="empty">Ainda não guardaste nada. Abre um filme ou série e carrega em ♥.</p>`);
+    return;
+  }
+  const secs = SECTIONS[tab];
+  let html = "";
+  if (tab==="home"){
+    const cont = LUMIN_FILMS.filter(f=>prog[f.id]&&prog[f.id].t>20&&prog[f.id].t<f.dur-30);
+    if (cont.length) html += railHTML("cont","▶ Continuar a ver",false);
+    html += railHTML("lumin","▶ Toca já na LUMIN (grátis, sem sair da app)",true,"lumin");
+  }
+  secs.forEach((s,i)=> html += railHTML("s"+i, s[0], true, `${tab}:${i}`));
+  main.innerHTML = html;
+  if (tab==="home"){
+    const cont = luminItems().filter(it=>{const p=prog[it.id];const f=LUMIN_FILMS.find(x=>x.id===it.id);return p&&p.t>20&&p.t<f.dur-30});
+    if ($("#r-cont")) $("#r-cont").innerHTML = cont.map(card).join("");
+    $("#r-lumin").innerHTML = luminItems().map(card).join("");
+  }
+  secs.forEach(async (s,i)=>{
+    const el = $("#r-s"+i); if(!el) return;
+    try{
+      const d = await discover(s[1], s[2]);
+      const items = d.results.filter(x=>x.poster_path).map(x=>norm(x,s[1]));
+      if (!items.length){ el.closest(".row").remove(); return; }
+      el.innerHTML = items.map(card).join("");
+      if (i===0 && (tab==="home"||tab==="natal"||tab==="movie"||tab==="tv")) heroFrom(items);
+    }catch(e){ el.innerHTML = `<div class="empty">Sem ligação. Tenta outra vez.</div>`; }
+  });
+}
+function railHTML(id,title,more,key){
+  return `<div class="row"><div class="rh"><h2>${esc(title)}</h2>${more&&key?`<button data-more="${key}">Ver todos ›</button>`:""}</div>
+    <div class="rail" id="r-${id}">${skel(8)}</div></div>`;
+}
+function heroFrom(items){
+  const it = items.find(x=>x.backdrop && x.overview) || items[0]; if(!it) return;
+  const h=$("#hero"); h.style.display=""; h.style.backgroundImage=`url('${it.backdrop}')`;
+  h.innerHTML = `<div class="in"><span class="badge ${freeOnly?"g":""}">${freeOnly?"GRÁTIS EM PORTUGAL":"EM DESTAQUE"}</span>
+    <h1>${esc(it.title)}</h1><p>${esc(it.overview)}</p>
+    <div class="btns"><button class="b p" data-open="${it.type}:${it.id}">▶ Onde ver</button></div></div>`;
+}
+
+/* "Ver todos": grelha com paginação (milhares de títulos) */
+async function renderAll(key){
+  const main=$("#main"); window.scrollTo(0,0); $("#hero").style.display="none";
+  let title, type, extra, page=1, total=1;
+  if (key==="lumin"){ tab="lumin"; setTab(); return render(); }
+  const [t,i] = key.split(":"); [title,type,extra] = SECTIONS[t][+i];
+  main.innerHTML = `<div class="ptitle">${esc(title)}</div><div class="grid" id="g"></div><button class="b more" id="moreB">Carregar mais</button>`;
+  async function load(){
+    $("#moreB").textContent="A carregar…";
+    try{
+      const d = await discover(type, extra, page); total = d.total_pages;
+      $("#g").insertAdjacentHTML("beforeend", d.results.filter(x=>x.poster_path).map(x=>card(norm(x,type))).join(""));
+      page++;
+      $("#moreB").textContent = page>Math.min(total,500) ? "Fim da lista" : `Carregar mais (${d.total_results.toLocaleString("pt-PT")} títulos)`;
+      $("#moreB").disabled = page>Math.min(total,500);
+    }catch{ $("#moreB").textContent="Erro. Tentar de novo"; }
+  }
+  $("#moreB").onclick = load; load();
+}
+
+async function renderSearch(q){
+  const main=$("#main");
+  main.innerHTML = `<div class="ptitle">Resultados para “${esc(q)}”</div><div class="grid" id="g">${skel(6)}</div>`;
+  const local = luminItems().filter(f=>f.title.toLowerCase().includes(q.toLowerCase()));
+  try{
+    const d = await api("search/multi",{query:q,include_adult:false});
+    if ($("#q").value.trim()!==q) return;
+    const items = d.results.filter(x=>(x.media_type==="movie"||x.media_type==="tv")&&x.poster_path).map(x=>norm(x));
+    const all = [...local,...items];
+    $("#g").innerHTML = all.length ? all.map(it=>card(it).replace('<span class="fr">GRÁTIS</span>','')).join("") : "";
+    if (!all.length) main.insertAdjacentHTML("beforeend",`<p class="empty">Nada encontrado.</p>`);
+    else main.insertAdjacentHTML("beforeend",`<p class="empty">Abre um título para ver se está grátis em Portugal.</p>`);
+  }catch{ $("#g").innerHTML = local.map(card).join("") || `<p class="empty">Sem ligação.</p>`; }
+}
+
+/* ================= detalhe ================= */
+async function openItem(key){
+  const [type,id] = key.split(/:(.+)/);
+  if (type==="lumin") return openLumin(id);
+  $("#sh").innerHTML = `<div class="cover"><button class="x" data-close>✕</button></div><div class="bd"><div class="empty">A carregar…</div></div>`;
+  $("#sheet").classList.add("on");
+  try{
+    const d = await api(`${type}/${id}`,{append_to_response:"videos,credits,watch/providers",include_video_language:"pt,en,null"});
+    let ov = d.overview;
+    if (!ov){ try{ ov = (await api(`${type}/${id}`,{language:"en-US"})).overview }catch{} }
+    const pv = (d["watch/providers"]?.results||{})[REGION] || {};
+    const free = [...(pv.free||[]).map(p=>({...p,kind:"Grátis"})),...(pv.ads||[]).map(p=>({...p,kind:"Grátis c/ anúncios"}))];
+    const paid = [...(pv.flatrate||[])].filter(p=>!free.some(f=>f.provider_id===p.provider_id));
+    const vids = (d.videos?.results||[]).filter(v=>v.site==="YouTube");
+    const tr = vids.find(v=>v.type==="Trailer"&&v.iso_639_1==="pt") || vids.find(v=>v.type==="Trailer"&&v.official) || vids.find(v=>v.type==="Trailer") || vids.find(v=>v.type==="Teaser");
+    const year = (d.release_date||d.first_air_date||"").slice(0,4);
+    const dur = type==="movie" ? (d.runtime?`${Math.floor(d.runtime/60)}h ${d.runtime%60}min`:"") : `${d.number_of_seasons||"?"} temporada${d.number_of_seasons>1?"s":""} · ${d.number_of_episodes||"?"} episódios`;
+    const cast = (d.credits?.cast||[]).slice(0,12);
+    const it = {type,id:+id,title:d.title||d.name,poster:d.poster_path?IMG+"w342"+d.poster_path:"",year};
+    const inList = myList.some(x=>x.type===type&&x.id===+id);
+    $("#sh").innerHTML = `
+      <div class="cover" id="cov" style="background-image:url('${d.backdrop_path?IMG+"w1280"+d.backdrop_path:it.poster}')"><button class="x" data-close>✕</button></div>
+      <div class="bd">
+        <h3>${esc(it.title)}</h3>
+        <div class="meta">${d.vote_average?`<span class="r">★ ${d.vote_average.toFixed(1)}</span>`:""}<span>${year}</span>${dur?`<span>${dur}</span>`:""}
+          <span>${(d.genres||[]).map(g=>esc(g.name)).join(", ")}</span></div>
+        <div class="btns">
+          ${free.length?`<button class="b p" data-watch="${esc(pv.link||"")}">▶ Ver grátis</button>`:""}
+          ${tr?`<button class="b ${free.length?"":"p"}" data-trailer="${tr.key}">🎬 Trailer</button>`:""}
+          <button class="b" data-fav='${esc(JSON.stringify(it))}'>${inList?"♥ Na lista":"♡ A minha lista"}</button>
+        </div>
+        <p class="ov">${esc(ov||"Sem sinopse disponível.")}</p>
+        <div class="sec">Onde ver em Portugal</div>
+        ${free.length ? `<div class="provs">${free.map(p=>provHTML(p,pv.link,true)).join("")}</div>`
+          : `<p class="ov" style="margin:0">Neste momento não está grátis em Portugal.</p>`}
+        ${paid.length ? `<div class="sec">Também com subscrição</div><div class="provs">${paid.map(p=>provHTML({...p,kind:"Subscrição"},pv.link,false)).join("")}</div>`:""}
+        ${cast.length?`<div class="sec">Elenco</div><div class="cast">${cast.map(c=>`<div>${c.profile_path?`<img loading="lazy" src="${IMG}w185${c.profile_path}">`:"<span></span>"}<b>${esc(c.name)}</b>${esc(c.character||"")}</div>`).join("")}</div>`:""}
+        <div class="lic">Ao carregar num serviço abre a página oficial onde o título está disponível. Dados: TMDB e JustWatch.</div>
+      </div>`;
+    setTimeout(()=>$("#sh .b")?.focus(),60);
+  }catch(e){
+    $("#sh .bd").innerHTML = `<div class="empty">Não foi possível carregar. Verifica a ligação.</div>`;
+  }
+}
+function provHTML(p,link,free){
+  return `<button class="prov ${free?"free":"paid"}" data-watch="${esc(link||"")}"><img src="${IMG}w92${p.logo_path}" alt=""><span>${esc(p.provider_name)}<small>${p.kind}</small></span></button>`;
+}
+function openLumin(id){
+  const f = LUMIN_FILMS.find(x=>x.id===id); if(!f) return;
+  const p = prog[f.id];
+  $("#sh").innerHTML = `<div class="cover" style="background-image:url('${f.poster}')"><button class="x" data-close>✕</button></div>
+    <div class="bd"><h3>${esc(f.title)}</h3>
+    <div class="meta"><span>${f.year}</span><span>${Math.max(1,Math.round(f.dur/60))} min</span><span>${esc(f.license)}</span></div>
+    <div class="btns"><button class="b p" data-play="${f.id}">▶ ${p&&p.t>20?"Continuar":"Ver agora"}</button>
+    ${p&&p.t>20?`<button class="b" data-restart="${f.id}">↺ Do início</button>`:""}</div>
+    <p class="ov">${esc(f.desc)}</p>
+    <div class="lic">Créditos: ${esc(f.credit)} · Licença: ${esc(f.license)} · Fonte: Internet Archive</div></div>`;
+  $("#sheet").classList.add("on"); setTimeout(()=>$("#sh .b")?.focus(),60);
+}
+function closeSheet(){ $("#sheet").classList.remove("on"); $("#sh").innerHTML=""; }
+
+function playTrailer(key){
+  const cov = $("#cov"); if(!cov) return;
+  cov.insertAdjacentHTML("beforeend",`<iframe src="https://www.youtube.com/embed/${key}?autoplay=1&playsinline=1&rel=0&modestbranding=1&hl=pt" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`);
+  cov.scrollIntoView({behavior:"smooth"});
+}
+function openWatch(link){
+  if (!link){ toast("Link indisponível"); return; }
+  if (window.LuminNative && LuminNative.openExternal) LuminNative.openExternal(link);
+  else window.open(link,"_blank","noopener");
+}
+function toggleFav(it){
+  const i = myList.findIndex(x=>x.type===it.type&&x.id===it.id);
+  if (i>=0){ myList.splice(i,1); toast("Removido da tua lista"); } else { myList.unshift(it); toast("Guardado na tua lista"); }
+  st.set("lf_list",myList);
+  const b=$("#sh [data-fav]"); if(b) b.textContent = i>=0 ? "♡ A minha lista" : "♥ Na lista";
+}
+
+/* ================= player (filmes livres) ================= */
+const vid=$("#vid"); let cur=null, idleT, saveT;
+function play(id,restart){
+  const f=LUMIN_FILMS.find(x=>x.id===id); if(!f) return;
+  closeSheet(); cur=f; $("#ptitle").textContent=f.title;
+  $("#player").classList.add("on","load"); vid.src=f.src;
+  const start=!restart&&prog[f.id]&&prog[f.id].t<f.dur-30?prog[f.id].t:0;
+  vid.addEventListener("loadedmetadata",()=>{ if(start) vid.currentTime=start; },{once:true});
+  vid.play().catch(()=>{});
+  try{ document.documentElement.requestFullscreen?.().catch(()=>{}); screen.orientation?.lock?.("landscape").catch(()=>{}) }catch{}
+  wake();
+}
+function saveProg(){ if(!cur||!vid.currentTime) return; prog[cur.id]={t:Math.floor(vid.currentTime),at:Date.now()}; st.set("lumin_filmes_prog",prog); }
+function closePlayer(){
+  saveProg(); vid.pause(); vid.removeAttribute("src"); vid.load();
+  $("#player").classList.remove("on","load","idle"); cur=null;
+  if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  try{ screen.orientation.unlock() }catch{}
+  if (tab==="home"||tab==="lumin") render();
+}
+function wake(){ $("#player").classList.remove("idle"); clearTimeout(idleT); idleT=setTimeout(()=>$("#player").classList.add("idle"),3000); }
+vid.addEventListener("waiting",()=>$("#player").classList.add("load"));
+vid.addEventListener("playing",()=>$("#player").classList.remove("load"));
+vid.addEventListener("canplay",()=>$("#player").classList.remove("load"));
+vid.addEventListener("timeupdate",()=>{ clearTimeout(saveT); saveT=setTimeout(saveProg,1000); });
+vid.addEventListener("ended",()=>{ if(cur){ delete prog[cur.id]; st.set("lumin_filmes_prog",prog);} closePlayer(); });
+vid.addEventListener("error",()=>{ if(!cur) return; $("#player").classList.remove("load"); toast("Não foi possível carregar o filme."); });
+["mousemove","touchstart","keydown"].forEach(e=>$("#player").addEventListener(e,wake,{passive:true}));
+$("#back").onclick=closePlayer;
+
+/* ================= eventos ================= */
+function setTab(){ document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.tab===tab)); }
+$("#tabs").addEventListener("click",e=>{
+  const b=e.target.closest(".tab"); if(!b) return;
+  tab=b.dataset.tab; $("#q").value=""; setTab(); render();
+});
+$("#freeT").classList.toggle("on",freeOnly);
+$("#freeT").onclick=()=>{ freeOnly=!freeOnly; st.set("lf_free",freeOnly); $("#freeT").classList.toggle("on",freeOnly); toast(freeOnly?"A mostrar só o que é grátis em Portugal":"A mostrar tudo (inclui pagos)"); render(); };
+let qT; $("#q").addEventListener("input",()=>{ clearTimeout(qT); qT=setTimeout(render,350); });
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-open],[data-more],[data-play],[data-restart],[data-close],[data-trailer],[data-watch],[data-fav]"); if(!t) return;
+  const d=t.dataset;
+  if (d.open) openItem(d.open);
+  else if (d.more) renderAll(d.more);
+  else if (d.play) play(d.play);
+  else if (d.restart) play(d.restart,true);
+  else if (d.close!==undefined) closeSheet();
+  else if (d.trailer) playTrailer(d.trailer);
+  else if (d.watch!==undefined) openWatch(d.watch);
+  else if (d.fav) toggleFav(JSON.parse(d.fav));
+});
+$("#sheet").addEventListener("click",e=>{ if(e.target.id==="sheet") closeSheet(); });
+
+/* Comando da TV */
+document.addEventListener("keydown",e=>{
+  if (e.key==="Escape"||e.key==="GoBack"||(e.key==="Backspace"&&e.target.tagName!=="INPUT")){ if(window.luminBack()) e.preventDefault(); return; }
+  if ($("#player").classList.contains("on")){
+    if(e.key==="ArrowRight") vid.currentTime+=10; else if(e.key==="ArrowLeft") vid.currentTime-=10;
+    else if(e.key==="Enter"||e.key===" "){ vid.paused?vid.play():vid.pause(); e.preventDefault(); }
+    return;
+  }
+  if (!["ArrowRight","ArrowLeft","ArrowUp","ArrowDown"].includes(e.key)) return;
+  if (e.target.tagName==="INPUT" && (e.key==="ArrowLeft"||e.key==="ArrowRight")) return;
+  const inSheet=$("#sheet").classList.contains("on");
+  const sel = inSheet ? "#sheet button" : "button.card, .hero .b, .tab, .toggle, .rh button, .more, #q";
+  const f=[...document.querySelectorAll(sel)].filter(el=>el.offsetParent);
+  const a=document.activeElement;
+  if(!f.includes(a)){ f.find(x=>x.classList.contains("card"))?.focus() || f[0]?.focus(); e.preventDefault(); return; }
+  const r=a.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2; let best=null,bd=1e9;
+  for(const el of f){ if(el===a) continue; const q=el.getBoundingClientRect(), x=q.left+q.width/2, y=q.top+q.height/2, dx=x-cx, dy=y-cy;
+    const ok = e.key==="ArrowRight"?dx>5&&Math.abs(dy)<r.height/2 : e.key==="ArrowLeft"?dx<-5&&Math.abs(dy)<r.height/2 : e.key==="ArrowDown"?dy>8 : dy<-8;
+    if(!ok) continue; const dist=Math.abs(dx)+Math.abs(dy)*(e.key.includes("Up")||e.key.includes("Down")?1:3); if(dist<bd){bd=dist;best=el} }
+  if(best){ best.focus({preventScroll:true}); best.scrollIntoView({block:"nearest",inline:"nearest",behavior:"smooth"}); e.preventDefault(); }
+});
+window.luminBack=()=>{
+  if($("#player").classList.contains("on")){ closePlayer(); return true; }
+  if($("#sheet").classList.contains("on")){ closeSheet(); return true; }
+  if($("#q").value){ $("#q").value=""; render(); return true; }
+  if(document.querySelector("#moreB")||tab!=="home"){ tab="home"; setTab(); render(); return true; }
+  return false;
+};
+
+render();
+</script>
+</body>
+</html>

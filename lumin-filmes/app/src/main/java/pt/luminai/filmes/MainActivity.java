@@ -11,12 +11,15 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 
 /**
  * LUMIN Filmes — a interface vem dentro da APK (assets/index.html),
@@ -50,6 +53,8 @@ public class MainActivity extends Activity {
         s.setUseWideViewPort(true);
         s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
 
+        web.addJavascriptInterface(new Bridge(), "LuminNative");
+
         web.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) {
@@ -79,13 +84,40 @@ public class MainActivity extends Activity {
 
         hideBars();
         if (state != null) web.restoreState(state);
-        else web.loadUrl("file:///android_asset/index.html");
+        else loadApp();
+    }
+
+    private static final String BASE_HOST = "app.luminai.pt";
+
+    /**
+     * Carrega a interface embutida com uma origem https (app.luminai.pt) para que
+     * os trailers do YouTube e o localStorage funcionem. Nada é pedido a esse domínio.
+     */
+    private void loadApp() {
+        try (InputStream in = getAssets().open("index.html")) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] buf = new byte[16384]; int n;
+            while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+            web.loadDataWithBaseURL("https://" + BASE_HOST + "/", out.toString("UTF-8"), "text/html", "UTF-8", null);
+        } catch (Exception e) {
+            web.loadData("<h3 style='color:#fff'>Erro ao abrir a app</h3>", "text/html", "UTF-8");
+        }
+    }
+
+    /** Ponte JS: abrir serviços oficiais (Rakuten, Plex, RTP Play...) fora da app. */
+    private class Bridge {
+        @JavascriptInterface
+        public void openExternal(final String url) {
+            runOnUiThread(() -> {
+                try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); } catch (Exception ignored) {}
+            });
+        }
     }
 
     /** Links (ex.: página do filme no Internet Archive) abrem no browser do sistema. */
     private boolean openExternal(Uri uri) {
-        String sch = uri.getScheme();
-        if ("file".equals(sch)) return false;
+        String host = uri.getHost();
+        if (BASE_HOST.equals(host)) return false;
         try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); } catch (Exception ignored) {}
         return true;
     }
