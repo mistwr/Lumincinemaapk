@@ -112,7 +112,9 @@ footer img{width:70px;flex:0 0 auto;margin-top:2px}
     <button class="tab on" data-tab="home">Início</button>
     <button class="tab" data-tab="movie">Filmes</button>
     <button class="tab" data-tab="tv">Séries</button>
+    <button class="tab" data-tab="nologin">⚡ Sem login</button>
     <button class="tab" data-tab="natal">🎄 Natal</button>
+    <button class="tab" data-tab="arquivo">📼 Arquivo livre</button>
     <button class="tab" data-tab="lumin">▶ Tocar já</button>
     <button class="tab" data-tab="list">♥ A minha lista</button>
     <button class="toggle on" id="freeT" title="Mostrar só o que é grátis em Portugal"><i></i>Só grátis</button>
@@ -141,6 +143,10 @@ const REGION = "PT", LANG = "pt-PT";
 const IMG = "https://image.tmdb.org/t/p/";
 const FREE = "free|ads";
 const LUMIN_FILMS = /*CATALOG*/[];
+/* Serviços que deixam ver sem conta (ids TMDB) e os que pedem conta grátis */
+const NOLOGIN = { 2791:"JustWatch TV", 452:"RTP Play", 192:"YouTube" };
+const NEEDS_ACCOUNT = { 35:"pede conta grátis", 538:"pode pedir conta grátis" };
+const NOLOGIN_IDS = Object.keys(NOLOGIN).filter(k=>k!=="192").join("|");
 
 /* ================= utils ================= */
 const $ = s => document.querySelector(s);
@@ -151,7 +157,8 @@ const st = {
 };
 let freeOnly = st.get("lf_free", true);
 let myList = st.get("lf_list", []);           // [{type,id,title,poster,year}]
-let prog = st.get("lumin_filmes_prog", {});    // progresso dos filmes livres
+let prog = st.get("lumin_filmes_prog", {});
+let iaHidden = new Set(st.get("lf_ia_hidden", []));    // progresso dos filmes livres
 const cache = new Map();
 function toast(m){ const t=$("#toast"); t.textContent=m; t.style.display="block"; clearTimeout(t._t); t._t=setTimeout(()=>t.style.display="none",2500); }
 
@@ -173,6 +180,8 @@ const discover = (type, extra={}, page=1) => api("discover/"+type, {
 /* ================= secções ================= */
 const SECTIONS = {
   home: [
+    ["⚡ Ver já, sem login", "movie", {with_watch_providers:NOLOGIN_IDS, with_watch_monetization_types:FREE, "vote_count.gte":10}],
+    ["⚡ Séries sem login", "tv", {with_watch_providers:NOLOGIN_IDS, with_watch_monetization_types:FREE, "vote_count.gte":1}],
     ["Populares grátis", "movie", {}],
     ["Séries grátis", "tv", {}],
     ["🎄 Natal em família", "movie", {with_keywords:"207317", without_genres:"27,53,80", "vote_count.gte":5}],
@@ -196,6 +205,12 @@ const SECTIONS = {
     ["Ficção e fantasia","tv",{with_genres:"10765"}],["Animação","tv",{with_genres:"16"}],["Para miúdos","tv",{with_genres:"10762","vote_count.gte":3}],
     ["Documentários","tv",{with_genres:"99"}],
   ],
+  nologin: [
+    ["Filmes populares","movie",{}],["Séries","tv",{"vote_count.gte":1}],["Clássicos","movie",{"primary_release_date.lte":"1979-12-31"}],
+    ["Terror","movie",{with_genres:"27"}],["Drama","movie",{with_genres:"18"}],["Comédia","movie",{with_genres:"35"}],
+    ["Documentários","movie",{with_genres:"99","vote_count.gte":3}],["Animação","movie",{with_genres:"16","vote_count.gte":3}],
+    ["Mais bem avaliados","movie",{sort_by:"vote_average.desc","vote_count.gte":200}],
+  ].map(([t,ty,e])=>[t,ty,{with_watch_providers:NOLOGIN_IDS,with_watch_monetization_types:FREE,"vote_count.gte":10,...e}]),
   natal: [
     ["Filmes de Natal","movie",{with_keywords:"207317",without_genres:"27,53,80","vote_count.gte":5}],
     ["Natal animado","movie",{with_keywords:"207317",with_genres:"16","vote_count.gte":3}],
@@ -213,8 +228,10 @@ function norm(x, type){
     overview:x.overview, vote:x.vote_average };
 }
 function card(it){
+  const badge = it.type==="lumin"||it.type==="ia" ? `<span class="fr lu">TOCA JÁ</span>`
+    : it.nologin ? `<span class="fr">SEM LOGIN</span>` : freeOnly ? `<span class="fr">GRÁTIS</span>` : "";
   return `<button class="card" data-open="${it.type}:${it.id}">
-    ${freeOnly && it.type!=="lumin"?`<span class="fr">GRÁTIS</span>`:""}${it.type==="lumin"?`<span class="fr lu">TOCA JÁ</span>`:""}
+    ${badge}
     <div class="im" style="background-image:url('${it.poster}')"></div>
     ${it.pct?`<div class="pg"><i style="width:${it.pct}%"></i></div>`:""}
     <div class="t">${esc(it.title)}</div><div class="y">${it.year||""}${it.vote?` · ★ ${it.vote.toFixed(1)}`:""}</div></button>`;
@@ -236,6 +253,7 @@ async function render(){
       <p class="empty">Filmes de domínio público e Creative Commons que tocam diretamente no player LUMIN.</p>`;
     return;
   }
+  if (tab==="arquivo") return renderArchiveTab();
   if (tab==="list"){
     main.innerHTML = `<div class="ptitle">♥ A minha lista</div>` + (myList.length
       ? `<div class="grid">${myList.map(card).join("")}</div>`
@@ -260,7 +278,8 @@ async function render(){
     const el = $("#r-s"+i); if(!el) return;
     try{
       const d = await discover(s[1], s[2]);
-      const items = d.results.filter(x=>x.poster_path).map(x=>norm(x,s[1]));
+      const nl = String(s[2].with_watch_providers||"")===NOLOGIN_IDS;
+      const items = d.results.filter(x=>x.poster_path).map(x=>({...norm(x,s[1]),nologin:nl}));
       if (!items.length){ el.closest(".row").remove(); return; }
       el.innerHTML = items.map(card).join("");
       if (i===0 && (tab==="home"||tab==="natal"||tab==="movie"||tab==="tv")) heroFrom(items);
@@ -284,13 +303,15 @@ async function renderAll(key){
   const main=$("#main"); window.scrollTo(0,0); $("#hero").style.display="none";
   let title, type, extra, page=1, total=1;
   if (key==="lumin"){ tab="lumin"; setTab(); return render(); }
+  if (key.startsWith("ia:")) return renderArchiveAll(+key.slice(3));
   const [t,i] = key.split(":"); [title,type,extra] = SECTIONS[t][+i];
   main.innerHTML = `<div class="ptitle">${esc(title)}</div><div class="grid" id="g"></div><button class="b more" id="moreB">Carregar mais</button>`;
   async function load(){
     $("#moreB").textContent="A carregar…";
     try{
       const d = await discover(type, extra, page); total = d.total_pages;
-      $("#g").insertAdjacentHTML("beforeend", d.results.filter(x=>x.poster_path).map(x=>card(norm(x,type))).join(""));
+      const nl = String(extra.with_watch_providers||"")===NOLOGIN_IDS;
+      $("#g").insertAdjacentHTML("beforeend", d.results.filter(x=>x.poster_path).map(x=>card({...norm(x,type),nologin:nl})).join(""));
       page++;
       $("#moreB").textContent = page>Math.min(total,500) ? "Fim da lista" : `Carregar mais (${d.total_results.toLocaleString("pt-PT")} títulos)`;
       $("#moreB").disabled = page>Math.min(total,500);
@@ -307,7 +328,9 @@ async function renderSearch(q){
     const d = await api("search/multi",{query:q,include_adult:false});
     if ($("#q").value.trim()!==q) return;
     const items = d.results.filter(x=>(x.media_type==="movie"||x.media_type==="tv")&&x.poster_path).map(x=>norm(x));
-    const all = [...local,...items];
+    const ia = await iaSearchText(q);
+    if ($("#q").value.trim()!==q) return;
+    const all = [...local,...ia.slice(0,12),...items];
     $("#g").innerHTML = all.length ? all.map(it=>card(it).replace('<span class="fr">GRÁTIS</span>','')).join("") : "";
     if (!all.length) main.insertAdjacentHTML("beforeend",`<p class="empty">Nada encontrado.</p>`);
     else main.insertAdjacentHTML("beforeend",`<p class="empty">Abre um título para ver se está grátis em Portugal.</p>`);
@@ -318,6 +341,7 @@ async function renderSearch(q){
 async function openItem(key){
   const [type,id] = key.split(/:(.+)/);
   if (type==="lumin") return openLumin(id);
+  if (type==="ia") return openArchive(id);
   $("#sh").innerHTML = `<div class="cover"><button class="x" data-close>✕</button></div><div class="bd"><div class="empty">A carregar…</div></div>`;
   $("#sheet").classList.add("on");
   try{
@@ -325,7 +349,11 @@ async function openItem(key){
     let ov = d.overview;
     if (!ov){ try{ ov = (await api(`${type}/${id}`,{language:"en-US"})).overview }catch{} }
     const pv = (d["watch/providers"]?.results||{})[REGION] || {};
-    const free = [...(pv.free||[]).map(p=>({...p,kind:"Grátis"})),...(pv.ads||[]).map(p=>({...p,kind:"Grátis c/ anúncios"}))];
+    const seenP = new Set();
+    const free = [...(pv.free||[]).map(p=>({...p,kind:"Grátis"})),...(pv.ads||[]).map(p=>({...p,kind:"Grátis c/ anúncios"}))]
+      .filter(p=>!seenP.has(p.provider_id) && seenP.add(p.provider_id))
+      .map(p=>({...p, nologin: !!NOLOGIN[p.provider_id], kind: NOLOGIN[p.provider_id] ? "Sem login · "+p.kind.replace("Grátis","grátis") : NEEDS_ACCOUNT[p.provider_id] ? "Grátis · "+NEEDS_ACCOUNT[p.provider_id] : p.kind }))
+      .sort((a,b)=>(b.nologin-a.nologin) || ((NEEDS_ACCOUNT[a.provider_id]?1:0)-(NEEDS_ACCOUNT[b.provider_id]?1:0)));
     const paid = [...(pv.flatrate||[])].filter(p=>!free.some(f=>f.provider_id===p.provider_id));
     const vids = (d.videos?.results||[]).filter(v=>v.site==="YouTube");
     const tr = vids.find(v=>v.type==="Trailer"&&v.iso_639_1==="pt") || vids.find(v=>v.type==="Trailer"&&v.official) || vids.find(v=>v.type==="Trailer") || vids.find(v=>v.type==="Teaser");
@@ -341,7 +369,7 @@ async function openItem(key){
         <div class="meta">${d.vote_average?`<span class="r">★ ${d.vote_average.toFixed(1)}</span>`:""}<span>${year}</span>${dur?`<span>${dur}</span>`:""}
           <span>${(d.genres||[]).map(g=>esc(g.name)).join(", ")}</span></div>
         <div class="btns">
-          ${free.length?`<button class="b p" data-watch="${esc(pv.link||"")}" data-prov="${esc(free[0].provider_name)}" data-free="1" data-title="${esc(it.title)}">▶ Ver grátis</button>`:""}
+          ${free.length?`<button class="b p" data-watch="${esc(pv.link||"")}" data-prov="${esc(free[0].provider_name)}" data-free="1" data-title="${esc(it.title)}">▶ ${free[0].nologin?"Ver já (sem login)":"Ver grátis"}</button>`:""}
           ${tr?`<button class="b ${free.length?"":"p"}" data-trailer="${tr.key}">🎬 Trailer</button>`:""}
           <button class="b" data-fav='${esc(JSON.stringify(it))}'>${inList?"♥ Na lista":"♡ A minha lista"}</button>
         </div>
@@ -411,10 +439,113 @@ function toggleFav(it){
   const b=$("#sh [data-fav]"); if(b) b.textContent = i>=0 ? "♡ A minha lista" : "♥ Na lista";
 }
 
+
+/* ================= ADDON: Arquivo livre (Internet Archive) =================
+   Só entra: (a) obras com licença Creative Commons em coleções de cinema, ou
+   (b) obras de 1929 ou antes. Tudo toca no player LUMIN, sem login. */
+const IA = "https://archive.org/";
+const IA_BASE = 'mediatype:movies AND -subject:(sex OR sexual OR adult OR erotic OR erotica OR nsfw OR porn OR nude OR nudity) AND -title:(sex OR erotic) AND downloads:[1500 TO 1000000000]';
+// Regras: CC só conta em obras de 2002+ (as licenças CC nasceram em 2002; antes disso a etiqueta foi
+// posta por quem carregou o vídeo). Domínio público na UE: só cinema até 1912 (autores mortos há +70 anos).
+const IA_SECTIONS = [
+  ["Animação livre (Creative Commons)", `collection:(animationandcartoons OR short_films OR feature_films) AND licenseurl:*licenses* AND subject:(animation OR animated OR blender OR "3d") AND year:[2002 TO 2030]`, "cc"],
+  ["Cinema independente (Creative Commons)", `collection:(feature_films OR short_films) AND licenseurl:*licenses* AND year:[2002 TO 2030]`, "cc"],
+  ["Curtas-metragens (Creative Commons)", `collection:short_films AND licenseurl:*licenses* AND year:[2002 TO 2030]`, "cc"],
+  ["Primórdios do cinema (até 1912)", `collection:(silent_films OR feature_films OR animationandcartoons) AND year:[1890 TO 1912]`, "old"],
+];
+// Personagens e autores ainda protegidos na UE, mesmo que o Archive os marque como livres
+const IA_BLOCK = /chaplin|keaton|disney|mickey|steamboat|betty boop|popeye|fleischer|felix the cat|laurel|hardy|harold lloyd|three stooges|looney|merrie melod|warner|superman|tom and jerry|woody woodpecker|casper|tarzan|sherlock|dictat|nudis|naked|nude|strip|saturn|baden verboten|schleiertanz|assentierung|bathing forbidden|veil dance|female conscripts|burlesque|bikini|chapters|episodes|compiled|serial|balloonatic|blacksmith|flawed family|dick tracy|phantom empire|flash gordon|lone ranger|zorro|trailer|full movie|filme completo|hd 1080|720p|dublado|legendado/i;
+const CC_RX = /creativecommons\.org\/licenses\/(by|by-sa|by-nd|by-nc|by-nc-sa|by-nc-nd)\//;
+const iaOk = (d, mode) => {
+  const lic = String(d.licenseurl||""), y = parseInt(d.year||"0",10);
+  const txt = [d.title, [].concat(d.creator||[]).join(" ")].join(" ");
+  if (!y || IA_BLOCK.test(txt)) return false;
+  // obras antigas carregadas depois de 2002 com etiqueta CC (ex.: "Filme (1937)") não contam
+  const cc = y>=2002 && CC_RX.test(lic) && !/\b(18|19)\d\d\b/.test(String(d.title)) || (y>=2002 && CC_RX.test(lic) && /\b(20)\d\d\b/.test(String(d.title)));
+  const old = y<=1912;   // antes do Chaplin, Keaton, Disney, etc.
+  return mode==="cc" ? cc : mode==="old" ? old : (cc||old);
+};
+const iaCache = new Map();
+async function iaSearch(q, page=1, rows=40){
+  const u = new URL(IA+"advancedsearch.php");
+  u.searchParams.set("q", `(${IA_BASE}) AND (${q})`);
+  for (const f of ["identifier","title","year","licenseurl","downloads","creator"]) u.searchParams.append("fl[]",f);
+  u.searchParams.set("sort[]","downloads desc"); u.searchParams.set("rows",rows); u.searchParams.set("page",page); u.searchParams.set("output","json");
+  const k=u.toString(); if (iaCache.has(k)) return iaCache.get(k);
+  const p = fetch(k).then(r=>r.json()).then(j=>j.response); iaCache.set(k,p); p.catch(()=>iaCache.delete(k)); return p;
+}
+const iaVisible = d => !iaHidden.has(d.identifier);
+const iaItem = d => ({type:"ia", id:d.identifier, title:d.title, year:d.year||"", poster:`${IA}services/img/${encodeURIComponent(d.identifier)}`});
+
+function renderArchiveTab(){
+  const main=$("#main");
+  main.innerHTML = `<div class="ptitle">📼 Arquivo livre</div>
+    <p class="empty" style="text-align:left;padding:0 14px 12px">Filmes com licença Creative Commons (2002 em diante) e cinema dos primórdios (até 1912), do Internet Archive. Tocam diretamente na LUMIN, sem login.</p>`
+    + IA_SECTIONS.map((s,i)=>railHTML("ia"+i, s[0], true, "ia:"+i)).join("");
+  IA_SECTIONS.forEach(async (s,i)=>{
+    const el=$("#r-ia"+i);
+    try{ const r=await iaSearch(s[1]); const items=r.docs.filter(d=>iaOk(d,s[2])&&iaVisible(d)).map(iaItem);
+      el.innerHTML = items.length ? items.map(card).join("") : `<div class="empty">Nada por agora.</div>`;
+    }catch{ el.innerHTML=`<div class="empty">Sem ligação.</div>`; }
+  });
+}
+async function renderArchiveAll(i){
+  const s=IA_SECTIONS[i]; const main=$("#main"); window.scrollTo(0,0);
+  let page=1;
+  main.innerHTML = `<div class="ptitle">${esc(s[0])}</div><div class="grid" id="g"></div><button class="b more" id="moreB">Carregar mais</button>`;
+  async function load(){
+    $("#moreB").textContent="A carregar…";
+    try{ const r=await iaSearch(s[1],page,60); page++;
+      $("#g").insertAdjacentHTML("beforeend", r.docs.filter(d=>iaOk(d,s[2])&&iaVisible(d)).map(iaItem).map(card).join(""));
+      const end = (page-1)*60 >= r.numFound; $("#moreB").disabled=end; $("#moreB").textContent = end?"Fim da lista":"Carregar mais";
+    }catch{ $("#moreB").textContent="Erro. Tentar de novo"; }
+  }
+  $("#moreB").onclick=load; load();
+}
+async function iaSearchText(q){
+  try{ const r=await iaSearch(`title:(${q.replace(/[^\p{L}\p{N} ]/gu," ")})`,1,30); return r.docs.filter(d=>iaOk(d)&&iaVisible(d)).map(iaItem); }catch{ return []; }
+}
+
+async function openArchive(id){
+  $("#sh").innerHTML = `<div class="cover" style="background-image:url('${IA}services/img/${encodeURIComponent(id)}')"><button class="x" data-close>✕</button></div><div class="bd"><div class="empty">A carregar…</div></div>`;
+  $("#sheet").classList.add("on");
+  try{
+    const m = await fetch(`${IA}metadata/${encodeURIComponent(id)}`).then(r=>r.json());
+    const md = m.metadata||{};
+    if (!iaOk({title:md.title,creator:md.creator,year:String(md.year||md.date||"").slice(0,4),licenseurl:md.licenseurl})){
+      $("#sh .bd").innerHTML=`<div class="empty">Este vídeo não cumpre as regras do Arquivo livre (licença ou direitos por confirmar), por isso não o abrimos.</div>`; return; }
+    const vids = (m.files||[]).filter(f=>/\.(mp4|m4v)$/i.test(f.name) && !/\.ia\.mp4$/i.test(f.name));
+    // um ficheiro por "episódio": prefere a versão mais leve com o mesmo nome base
+    const groups = {};
+    for (const f of vids){ const base=f.name.replace(/(_512kb)?\.(mp4|m4v)$/i,""); const sz=+f.size||9e12; if(!groups[base]||sz<(+groups[base].size||9e12)) groups[base]=f; }
+    const files = Object.values(groups).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+    const desc = String(Array.isArray(md.description)?md.description[0]:md.description||"").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().slice(0,700);
+    const lic = String(md.licenseurl||"");
+    const licTxt = CC_RX.test(lic) ? "Creative Commons ("+lic.split("/licenses/")[1].replace(/\/$/,"").toUpperCase()+")" : "Domínio público (cinema até 1912)";
+    const it = {type:"ia",id,title:md.title||id};
+    $("#sh").innerHTML = `<div class="cover" style="background-image:url('${IA}services/img/${encodeURIComponent(id)}')"><button class="x" data-close>✕</button></div>
+      <div class="bd"><h3>${esc(it.title)}</h3>
+      <div class="meta"><span>${esc(md.year||md.date||"")}</span>${files.length>1?`<span>${files.length} vídeos</span>`:""}<span>${esc(licTxt)}</span></div>
+      ${files.length ? `<div class="btns"><button class="b p" data-iaplay="${esc(id)}" data-iafile="${esc(files[0].name)}">▶ ${prog["ia:"+id+"/"+files[0].name]?"Continuar":"Ver agora"}</button></div>` : `<p class="ov">Este item não tem vídeo compatível.</p>`}
+      ${files.length>1 ? `<div class="sec">Episódios / partes</div><div class="provs">${files.slice(0,60).map((f,i)=>`<button class="prov free" data-iaplay="${esc(id)}" data-iafile="${esc(f.name)}"><span>${i+1}. ${esc(f.title||f.name.replace(/\.(mp4|m4v)$/i,"").slice(0,48))}<small>${f.length?Math.round(f.length/60)+" min":""}</small></span></button>`).join("")}</div>`:""}
+      <p class="ov">${esc(desc||"")}</p>
+      <div class="btns" style="margin-top:12px"><button class="b" data-iahide="${esc(id)}">🚫 Esconder (conteúdo impróprio ou sem direitos)</button></div>
+      <div class="lic">Autor/créditos: ${esc(md.creator||"—")} · Licença: ${esc(licTxt)} · Fonte: Internet Archive (archive.org/details/${esc(id)})</div></div>`;
+    setTimeout(()=>$("#sh .b")?.focus(),60);
+  }catch{ $("#sh .bd").innerHTML=`<div class="empty">Não foi possível carregar.</div>`; }
+}
+function iaPlay(id, file, restart){
+  const key = "ia:"+id+"/"+file;
+  playSrc({ id:key, title:file.replace(/\.(mp4|m4v)$/i,"").replace(/_/g," "), src:`${IA}download/${encodeURIComponent(id)}/${file.split("/").map(encodeURIComponent).join("/")}`, dur:9e9 }, restart);
+}
+
 /* ================= player (filmes livres) ================= */
 const vid=$("#vid"); let cur=null, idleT, saveT;
 function play(id,restart){
   const f=LUMIN_FILMS.find(x=>x.id===id); if(!f) return;
+  playSrc(f,restart);
+}
+function playSrc(f,restart){
   closeSheet(); cur=f; $("#ptitle").textContent=f.title;
   $("#player").classList.add("on","load"); vid.src=f.src;
   const start=!restart&&prog[f.id]&&prog[f.id].t<f.dur-30?prog[f.id].t:0;
@@ -431,6 +562,7 @@ function closePlayer(){
   try{ screen.orientation.unlock() }catch{}
   if (tab==="home"||tab==="lumin") render();
 }
+
 function wake(){ $("#player").classList.remove("idle"); clearTimeout(idleT); idleT=setTimeout(()=>$("#player").classList.add("idle"),3000); }
 vid.addEventListener("waiting",()=>$("#player").classList.add("load"));
 vid.addEventListener("playing",()=>$("#player").classList.remove("load"));
@@ -451,9 +583,11 @@ $("#freeT").classList.toggle("on",freeOnly);
 $("#freeT").onclick=()=>{ freeOnly=!freeOnly; st.set("lf_free",freeOnly); $("#freeT").classList.toggle("on",freeOnly); toast(freeOnly?"A mostrar só o que é grátis em Portugal":"A mostrar tudo (inclui pagos)"); render(); };
 let qT; $("#q").addEventListener("input",()=>{ clearTimeout(qT); qT=setTimeout(render,350); });
 document.addEventListener("click",e=>{
-  const t=e.target.closest("[data-open],[data-more],[data-play],[data-restart],[data-close],[data-trailer],[data-watch],[data-fav]"); if(!t) return;
+  const t=e.target.closest("[data-iahide],[data-iaplay],[data-open],[data-more],[data-play],[data-restart],[data-close],[data-trailer],[data-watch],[data-fav]"); if(!t) return;
   const d=t.dataset;
   if (d.open) openItem(d.open);
+  else if (d.iaplay) iaPlay(d.iaplay, d.iafile, !!d.restart);
+  else if (d.iahide){ iaHidden.add(d.iahide); st.set("lf_ia_hidden",[...iaHidden]); closeSheet(); toast("Escondido. Não volta a aparecer."); if(tab==="arquivo") render(); }
   else if (d.more) renderAll(d.more);
   else if (d.play) play(d.play);
   else if (d.restart) play(d.restart,true);
