@@ -12,4 +12,8 @@ export LUMIN_KEYSTORE=/caminho/lumin-filmes.jks LUMIN_KEYSTORE_PASS=...   # sem 
 Usa sempre a mesma keystore. Com outra chave, as atualizações não instalam por cima da versão anterior.
 
 ## Adicionar filmes
-Edita o array `FILMS` em `index.html` (ou `catalog.json`). Regra: só entram filmes cujos autores (realizador, argumentista, compositor) morreram há mais de 70 anos, ou que tenham licença CC. Coloca sempre os créditos e a licença.
+Edita `catalog.json` (filmes que tocam no player). A interface está em `web/index.template.html`.
+
+## Token TMDB
+Põe `tmdb.token=eyJ...` em `local.properties` (ou a variável `TMDB_TOKEN`). O build injeta-o na APK, e o token nunca vai para o git.
+Atenção: a chave atual é de uso pessoal/não comercial. Antes de distribuir publicamente, pede aprovação ao TMDB (API for Business).

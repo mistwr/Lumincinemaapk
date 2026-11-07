@@ -1,4 +1,27 @@
 plugins { id 'com.android.application' }
+
+def props = new Properties()
+def lp = rootProject.file('local.properties')
+if (lp.exists()) lp.withInputStream { props.load(it) }
+def tmdbToken = System.getenv('TMDB_TOKEN') ?: props.getProperty('tmdb.token', '')
+
+// Gera assets/index.html a partir de web/index.template.html + catalog.json + token TMDB (o token nunca vai para o git)
+def genAssets = layout.buildDirectory.dir('generated/lumin-assets')
+tasks.register('generateLuminAssets') {
+    inputs.file(rootProject.file('web/index.template.html'))
+    inputs.file(rootProject.file('catalog.json'))
+    inputs.property('token', tmdbToken)
+    outputs.dir(genAssets)
+    doLast {
+        if (!tmdbToken) throw new GradleException('Falta o token TMDB: define TMDB_TOKEN ou tmdb.token em local.properties')
+        def html = rootProject.file('web/index.template.html').getText('UTF-8')
+        def cat = rootProject.file('catalog.json').getText('UTF-8').replaceAll(/\s*\n\s*/, '')
+        html = html.replace('/*CATALOG*/[]', cat).replace('__TMDB_TOKEN__', tmdbToken)
+        def out = genAssets.get().file('index.html').asFile
+        out.parentFile.mkdirs(); out.setText(html, 'UTF-8')
+    }
+}
+
 android {
     namespace 'pt.luminai.filmes'
     compileSdk 34
@@ -6,9 +29,10 @@ android {
         applicationId 'pt.luminai.filmes'
         minSdk 21
         targetSdk 34
-        versionCode 1
-        versionName '1.0'
+        versionCode 2
+        versionName '2.0'
     }
+    sourceSets { main { assets.srcDirs += [genAssets.get().asFile] } }
     signingConfigs {
         release {
             def ks = System.getenv('LUMIN_KEYSTORE')
@@ -28,3 +52,4 @@ android {
     }
     compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
 }
+tasks.named('preBuild') { dependsOn 'generateLuminAssets' }
