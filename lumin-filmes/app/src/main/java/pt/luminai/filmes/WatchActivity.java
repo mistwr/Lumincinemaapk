@@ -124,6 +124,11 @@ public class WatchActivity extends Activity {
         CookieManager.getInstance().setAcceptCookie(true);
         CookieManager.getInstance().setAcceptThirdPartyCookies(web, true);
 
+        web.addJavascriptInterface(new Object() {
+            @android.webkit.JavascriptInterface public void playing() { runOnUiThread(() -> cinema(true)); }
+            @android.webkit.JavascriptInterface public void paused() { runOnUiThread(() -> { if (fullView == null) bar.setVisibility(View.VISIBLE); }); }
+        }, "LuminWatch");
+
         web.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) { return handle(r.getUrl()); }
@@ -149,8 +154,9 @@ public class WatchActivity extends Activity {
                         Diag.log("Ver: salto automático (" + provider + ") = " + r);
                         if (r == null || !r.contains("ok")) cover.setVisibility(View.GONE); // não encontrou: mostra a página
                     });
-                } else if (!host.endsWith("themoviedb.org") && !host.endsWith("justwatch.com")) {
-                    cover.setVisibility(View.GONE);
+                } else if (!host.endsWith("themoviedb.org")) {
+                    if (!host.endsWith("click.justwatch.com")) cover.setVisibility(View.GONE);
+                    v.evaluateJavascript(CINEMA_JS, null);
                 }
             }
         });
@@ -197,6 +203,36 @@ public class WatchActivity extends Activity {
             + "if(r<anyRank&&r<2){any=a.href;anyRank=r}"
             + "if(want&&(m==want||m.indexOf(want)>=0||want.indexOf(m)>=0)&&r<rank){best=a.href;rank=r}"
             + "}catch(e){}});var go=best||any;if(go){location.href=go;return 'ok'}return 'none'})(" + p + ")";
+    }
+
+    /**
+     * "Modo cinema": quando o vídeo do serviço começa a tocar, o leitor DELES passa para
+     * ecrã inteiro (com os anúncios deles intactos) e a barra LUMIN esconde-se.
+     */
+    private static final String CINEMA_JS =
+        "(function(){if(window.__luminCinema)return;window.__luminCinema=1;" +
+        "function box(v){var e=v,p;for(var i=0;i<6&&(p=e.parentElement);i++){var c=(p.className||'')+' '+(p.id||'');" +
+        "if(/player|video|vjs|jw|shaka|bitmovin|theo/i.test(c)&&p.offsetWidth>=v.offsetWidth)e=p;}return e;}" +
+        "function hook(v){if(v.__lumin)return;v.__lumin=1;" +
+        "v.addEventListener('playing',function(){try{LuminWatch.playing()}catch(e){}" +
+        "var b=box(v);if(!document.fullscreenElement&&b.requestFullscreen){b.requestFullscreen().catch(function(){})}});" +
+        "v.addEventListener('pause',function(){try{LuminWatch.paused()}catch(e){}});}" +
+        "function scan(){document.querySelectorAll('video').forEach(hook);}" +
+        "scan();new MutationObserver(scan).observe(document.documentElement,{childList:true,subtree:true});})()";
+
+    private void cinema(boolean on) {
+        if (on) {
+            bar.setVisibility(View.GONE);
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+            immersiveOnly();
+        }
+    }
+
+    private void immersiveOnly() {
+        if (Build.VERSION.SDK_INT < 19) return;
+        getWindow().getDecorView().setSystemUiVisibility(
+            View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
     }
 
     /** http(s) fica dentro da LUMIN; esquemas de apps (intent://, market://) abrem a app oficial se existir. */
@@ -259,7 +295,8 @@ public class WatchActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (fullView != null) { exitFull(); return; }
+        if (fullView != null) { exitFull(); bar.setVisibility(View.VISIBLE); return; }
+        if (bar.getVisibility() != View.VISIBLE) { bar.setVisibility(View.VISIBLE); setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED); immersive(false); return; }
         if (web != null && web.canGoBack()) web.goBack(); else super.onBackPressed();
     }
 
