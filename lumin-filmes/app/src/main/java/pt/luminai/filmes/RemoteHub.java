@@ -198,7 +198,7 @@ final class RemoteHub {
         synchronized (found) { found.clear(); }
         push();
         discListener = new NsdManager.DiscoveryListener() {
-            public void onStartDiscoveryFailed(String t, int e) {}
+            public void onStartDiscoveryFailed(String t, int e) { Diag.log("NSD: falhou ao procurar (" + e + ")"); }
             public void onStopDiscoveryFailed(String t, int e) {}
             public void onDiscoveryStarted(String t) {}
             public void onDiscoveryStopped(String t) {}
@@ -206,6 +206,7 @@ final class RemoteHub {
                 synchronized (found) { found.remove(si.getServiceName()); } push();
             }
             public void onServiceFound(NsdServiceInfo si) {
+                Diag.log("NSD: encontrado " + si.getServiceName());
                 if (!si.getServiceType().contains("luminfilmes")) return;
                 try {
                     nsd.resolveService(si, new NsdManager.ResolveListener() {
@@ -254,6 +255,7 @@ final class RemoteHub {
                 ok = c.getResponseCode() == 200;
                 c.disconnect();
             } catch (Exception ignored) {}
+            Diag.log("LUMIN TV " + host + ": " + (ok ? "ok" : "sem resposta / código errado"));
             js("window.__luminTVResult && window.__luminTVResult(" + ok + ")");
         }).start();
     }

@@ -46,6 +46,7 @@ final class SmartTv {
     static void discover(final Context ctx) {
         if (scanning) return;
         scanning = true;
+        Diag.log("SSDP: a procurar TVs… (IP deste telemóvel: " + RemoteHub.ip(ctx) + ")");
         new Thread(() -> {
             WifiManager.MulticastLock lock = null;
             try {
@@ -73,10 +74,12 @@ final class SmartTv {
                     }
                 }
                 s.close();
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                Diag.log("SSDP: falhou " + e);
             } finally {
                 if (lock != null) try { lock.release(); } catch (Exception ignored) {}
                 scanning = false;
+                synchronized (found) { Diag.log("SSDP: fim, " + found.size() + " TV(s) reconhecida(s)"); }
             }
         }, "lumin-ssdp").start();
     }
@@ -88,6 +91,7 @@ final class SmartTv {
 
     private static void onReply(String ip, String r) {
         String st = header(r, "ST").toLowerCase(), server = header(r, "SERVER").toLowerCase(), loc = header(r, "LOCATION");
+        Diag.log("SSDP: resposta de " + ip + " | " + header(r, "SERVER") + " | " + header(r, "ST"));
         String type = null;
         if (st.contains("samsung") || server.contains("samsung") || server.contains("tizen")) type = "samsung";
         else if (st.contains("lge") || server.contains("webos")) type = "lg";
@@ -161,6 +165,7 @@ final class SmartTv {
     }
 
     static void status(String host, String s) {
+        Diag.log("TV " + host + ": " + s);
         RemoteHub.js("window.__luminSTVStatus && window.__luminSTVStatus(" + JSONObject.quote(host) + "," + JSONObject.quote(s) + ")");
     }
 
@@ -222,9 +227,9 @@ final class SmartTv {
     private static WebSocketClient client(String url, OnMsg onMsg, Runnable onOpen) throws Exception {
         WebSocketClient c = new WebSocketClient(new URI(url)) {
             @Override public void onOpen(ServerHandshake h) { if (onOpen != null) onOpen.run(); }
-            @Override public void onMessage(String m) { onMsg.on(m); }
-            @Override public void onClose(int code, String reason, boolean remote) {}
-            @Override public void onError(Exception ex) {}
+            @Override public void onMessage(String m) { Diag.log("WS<- " + (m.length() > 160 ? m.substring(0, 160) + "…" : m)); onMsg.on(m); }
+            @Override public void onClose(int code, String reason, boolean remote) { Diag.log("WS fechado " + code + " " + reason); }
+            @Override public void onError(Exception ex) { Diag.log("WS erro " + ex); }
         };
         if (url.startsWith("wss")) c.setSocketFactory(trustAll().getSocketFactory());
         c.setConnectionLostTimeout(30);
@@ -259,7 +264,9 @@ final class SmartTv {
                         }
                     } catch (Exception ignored) {}
                 }, null);
-                try { ws.connectBlocking(4, java.util.concurrent.TimeUnit.SECONDS); } catch (Exception ignored) {}
+                Diag.log("Samsung: a tentar " + u.replaceAll("token=[^&]+", "token=***"));
+                try { ws.connectBlocking(4, java.util.concurrent.TimeUnit.SECONDS); } catch (Exception e) { Diag.log("Samsung: " + e); }
+                Diag.log("Samsung: ligação " + (ws.isOpen() ? "aberta" : "falhou"));
                 if (ws.isOpen()) {
                     synchronized (lock) { if (!ready) lock.wait(30000); }  // tempo para carregar "Permitir" na TV
                     if (ready) return;
@@ -326,7 +333,9 @@ final class SmartTv {
                         }
                     } catch (Exception ignored) {}
                 }, null);
-                try { ws.connectBlocking(4, java.util.concurrent.TimeUnit.SECONDS); } catch (Exception ignored) {}
+                Diag.log("LG: a tentar " + u);
+                try { ws.connectBlocking(4, java.util.concurrent.TimeUnit.SECONDS); } catch (Exception e) { Diag.log("LG: " + e); }
+                Diag.log("LG: ligação " + (ws.isOpen() ? "aberta" : "falhou"));
                 if (ws.isOpen()) {
                     register(false);
                     synchronized (lock) { if (!ready) lock.wait(30000); }

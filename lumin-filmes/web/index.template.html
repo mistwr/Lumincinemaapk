@@ -565,6 +565,7 @@ async function openWatch(link, prov, free, title){
   if (!(window.LuminNative && LuminNative.openInApp)){ window.open(link,"_blank","noopener"); return; }
   toast("A abrir "+(prov||"serviço")+"…");
   const list = await resolveLinks(link);
+  try{ N().diagLog(`Ver "${title}" via ${prov}: ${list.length} links resolvidos no telemóvel`); }catch{}
   const want = normP(prov);
   const order = free ? ["free","ads","flatrate"] : ["flatrate","free","ads","rent","buy"];
   const cands = list.filter(x=>{ const n=normP(x.provider); return n===want || n.includes(want) || want.includes(n); })
@@ -769,6 +770,7 @@ function renderRemote(){
     h += `<button class="dev" data-bridge="start"><span class="ic">📲</span><span><b>Ligar a ponte</b><small>Instala a LUMIN na Android TV ou abre-a no browser de qualquer Smart TV, sem cabos nem lojas</small></span></button>`;
   }
   if (castOK()) h += `<div class="sec">Chromecast / Google TV</div><button class="dev" data-castpick><span class="ic">📡</span><span><b>Escolher Chromecast</b><small>Para enviar os filmes "Toca já" e do Arquivo</small></span></button>`;
+  h += `<div class="sec">Problemas?</div><button class="dev" data-diag><span class="ic">🩺</span><span><b>Diagnóstico</b><small>Mostra o que a app está a fazer (tira um print e envia)</small></span></button>`;
   h += `<div class="sec">Este aparelho</div><button class="dev ${info.running?"on":""}" data-tvserver><span class="ic">🖥️</span><span><b>${info.running?"Modo TV ligado":"Usar este aparelho como TV"}</b><small>${info.running?`Código: <b style="color:var(--gold2);letter-spacing:.2em">${esc(info.code)}</b> · ${esc(info.ip||"")}`:"Para controlar este aparelho a partir de outro telemóvel"}</small></span></button>`;
   $("#remote").innerHTML = h;
   if (br.running && $("#qr")) drawQR($("#qr"), br.apk);
@@ -877,7 +879,7 @@ $("#freeT").classList.toggle("on",freeOnly);
 $("#freeT").onclick=()=>{ freeOnly=!freeOnly; st.set("lf_free",freeOnly); $("#freeT").classList.toggle("on",freeOnly); toast(freeOnly?"A mostrar só o que é grátis em Portugal":"A mostrar tudo (inclui pagos)"); render(); };
 let qT; $("#q").addEventListener("input",()=>{ clearTimeout(qT); qT=setTimeout(render,350); });
 document.addEventListener("click",e=>{
-  const t=e.target.closest("[data-mood],[data-nav],[data-cast],[data-tvplay],[data-tvopen],[data-k],[data-devpick],[data-rescan],[data-bridge],[data-lgopen],[data-tvforget],[data-tvserver],[data-castpick],[data-rclose],[data-iahide],[data-iaplay],[data-open],[data-more],[data-play],[data-restart],[data-close],[data-trailer],[data-watch],[data-fav]"); if(!t) return;
+  const t=e.target.closest("[data-diag],[data-rback],[data-mood],[data-nav],[data-cast],[data-tvplay],[data-tvopen],[data-k],[data-devpick],[data-rescan],[data-bridge],[data-lgopen],[data-tvforget],[data-tvserver],[data-castpick],[data-rclose],[data-iahide],[data-iaplay],[data-open],[data-more],[data-play],[data-restart],[data-close],[data-trailer],[data-watch],[data-fav]"); if(!t) return;
   const d=t.dataset;
   if (d.mood!==undefined){ const m=MOODS[+d.mood]; if(!m[1]) return surprise(); return renderAll([m[0],m[1],m[2]]); }
   else if (d.nav) return nav(d.nav);
@@ -889,6 +891,9 @@ document.addEventListener("click",e=>{
     try{navigator.vibrate&&navigator.vibrate(12)}catch{} return; }
   else if (d.devpick!==undefined) return pickDevice(JSON.parse(d.devpick));
   else if (d.tvforget!==undefined){ TV.connected=null; st.set("lf_tv2",null); updTvBtn(); return openRemote(); }
+  else if (d.diag!==undefined){ $("#remote").innerHTML = `<div class="rm-h"><button class="ib" data-rback>←</button><h2>🩺 Diagnóstico</h2><button class="ib" data-diag>↻</button></div>
+      <pre style="white-space:pre-wrap;font-size:11px;line-height:1.45;color:#ddd;background:#ffffff0a;border:1px solid #ffffff14;border-radius:12px;padding:12px">${esc(N()?.diag?.()||"Sem registos.")}</pre>`; return; }
+  else if (d.rback!==undefined) return renderRemote();
   else if (d.rescan!==undefined){ TV.devices=[]; TV.stvs=[]; return openRemote(); }
   else if (d.bridge){ if(d.bridge==="start") N().bridgeStart(); else N().bridgeStop(); setTimeout(renderRemote,500); return; }
   else if (d.lgopen!==undefined){ N().stvOpenUrl("lg", TV.connected.host, TV.bridge.url); toast("🚀 A abrir a LUMIN na LG…"); return; }
