@@ -214,6 +214,7 @@ final class RemoteHub {
                         public void onServiceResolved(NsdServiceInfo i) {
                             try {
                                 InetAddress h = i.getHost();
+                                if (h.getHostAddress().equals(ip(ctx))) return;   // é este aparelho
                                 JSONObject o = new JSONObject();
                                 o.put("name", i.getServiceName()); o.put("host", h.getHostAddress()); o.put("port", i.getPort());
                                 synchronized (found) { found.put(i.getServiceName(), o); }

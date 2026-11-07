@@ -625,7 +625,9 @@ async function openItem(key){
           ${free.length?`<button class="b p" data-watch="${esc(pv.link||"")}" data-prov="${esc(free[0].provider_name)}" data-free="1" data-title="${esc(it.title)}">▶ ${free[0].nologin?"Ver já (sem login)":"Ver grátis"}</button>`:""}
           ${tr?`<button class="b ${free.length?"":"p"}" data-trailer="${tr.key}">🎬 Trailer</button>`:""}
           <button class="b" data-fav='${esc(JSON.stringify(it))}'>${inList?"♥ Na lista":"♡ Lista"}</button>
-          ${canSendTitle()?`<button class="b" data-tvopen="${type}:${id}">📺 Abrir na TV</button>`:""}
+          ${canSendTitle()&&TV.connected.kind!=="gtv"?`<button class="b" data-tvopen="${type}:${id}">📺 Abrir na TV</button>`:""}
+          ${TV.connected&&TV.connected.kind==="gtv"&&free.length?`<button class="b" data-gtvwatch="${esc(pv.link||"")}" data-prov="${esc(free[0].provider_name)}">📺 Ver na TV</button>`:""}
+          ${TV.connected&&TV.connected.kind==="gtv"&&tr?`<button class="b" data-gtvapp="https://www.youtube.com/watch?v=${tr.key}">📺 Trailer na TV</button>`:""}
         </div>
         <p class="ov">${esc(ov||"Sem sinopse disponível.")}</p>
         <div class="sec">Onde ver em Portugal</div>
@@ -801,10 +803,10 @@ function iaPlay(id, file, restart){
 /* ================= TV: Chromecast, LUMIN na TV, Smart TVs, ponte e comando ================= */
 const N = () => window.LuminNative || null;
 const TV = { connected: st.get("lf_tv2", null), devices: [], stvs: [], serverOn:false, bridge:{} };
-const KIND_IC = { lumin:"📺", web:"🌐", samsung:"🟦", lg:"🔴", roku:"🟪" };
-const KIND_TX = { lumin:"LUMIN na TV", web:"LUMIN no browser da TV", samsung:"Samsung Smart TV", lg:"LG webOS", roku:"Roku" };
+const KIND_IC = { lumin:"📺", web:"🌐", samsung:"🟦", lg:"🔴", roku:"🟪", gtv:"🟢" };
+const KIND_TX = { lumin:"LUMIN na TV", web:"LUMIN no browser da TV", samsung:"Samsung Smart TV", lg:"LG webOS", roku:"Roku", gtv:"Google TV / Android TV" };
 const castOK = () => { try{ return !!(N() && N().castAvailable && N().castAvailable()); }catch{ return false; } };
-const canSendTitle = () => TV.connected && (TV.connected.kind==="lumin" || TV.connected.kind==="web");
+const canSendTitle = () => TV.connected && ["lumin","web","gtv"].includes(TV.connected.kind);
 function castBtns(m){
   const j = esc(JSON.stringify(m));
   return (castOK()?`<button class="b" data-cast='${j}'>📡 Chromecast</button>`:"") + (canSendTitle()?`<button class="b" data-tvplay='${j}'>📺 Ver na TV</button>`:"");
@@ -825,6 +827,11 @@ async function tvDo(cmd, okMsg){
   let ok = true;
   if (c.kind==="lumin") ok = await tvSendLumin(cmd);
   else if (c.kind==="web") N().bridgePush(JSON.stringify(cmd));
+  else if (c.kind==="gtv" && (cmd.t==="open"||cmd.t==="play")){
+    const url = cmd.t==="play" ? `luminfilmes://play?src=${encodeURIComponent(cmd.src)}&title=${encodeURIComponent(cmd.title||"")}` : `luminfilmes://open?key=${encodeURIComponent(cmd.key)}`;
+    N().stvOpenUrl("gtv", c.host, url);
+  }
+  else if (c.kind==="gtv" && cmd.t==="link") N().stvOpenUrl("gtv", c.host, cmd.url);
   else if (cmd.t==="key") N().stvKey(c.kind, c.host, cmd.k);
   else if (cmd.t==="text") N().stvText(c.kind, c.host, cmd.v);
   else if (cmd.t==="home") N().stvKey(c.kind, c.host, "home");
@@ -836,6 +843,7 @@ window.__luminTVs  = list => { TV.devices = (list||[]).map(d=>({...d,kind:"lumin
 window.__luminSTVs = list => { TV.stvs = list||[]; if ($("#remote").classList.contains("on") && !TV.connected) renderRemote(); };
 window.__luminSTVStatus = (host, s) => {
   const c = TV.connected;
+  if (s==="code" && TV.pendingSTV && TV.pendingSTV.host===host){ return gtvCodeScreen(TV.pendingSTV); }
   if (s==="ok"){ if (TV.pendingSTV && TV.pendingSTV.host===host){ TV.connected=TV.pendingSTV; TV.pendingSTV=null; st.set("lf_tv2",TV.connected); toast("✅ Ligado a "+TV.connected.name); updTvBtn(); renderRemote(); } return; }
   if (s.startsWith("erro") || s.includes("recusado")){ if (TV.pendingSTV && TV.pendingSTV.host===host){ TV.pendingSTV=null; renderRemote(); } toast("TV: "+s); return; }
   toast(s);
@@ -860,7 +868,10 @@ function renderRemote(){
       <button data-k="rew">⏪<small>Recuar</small></button><button data-k="search">⌕<small>Pesquisa</small></button><button data-k="ffw">⏩<small>Avançar</small></button>
       <button data-k="voldown">🔉<small>Vol -</small></button><button data-k="mute">🔇<small>Mudo</small></button><button data-k="volup">🔊<small>Vol +</small></button>
     </div>
-    <div class="code"><input id="tvText" placeholder="Escrever na TV e Enter…" style="letter-spacing:0;font-size:16px;width:100%;max-width:320px"></div>
+    ${c.kind==="gtv"?`<div class="keys" style="margin-top:12px"><button data-k="power">⏻<small>Ligar/desl.</small></button><button data-k="chup">▲<small>Canal +</small></button><button data-k="settings">⚙<small>Definições</small></button>
+      <button data-k="input">⇄<small>Entrada</small></button><button data-k="chdown">▼<small>Canal -</small></button><button data-k="guide">☰<small>Guia</small></button></div>
+      <div class="btns" style="justify-content:center;margin-top:12px"><button class="b" data-gtvapp="https://www.youtube.com">▶ YouTube</button><button class="b" data-gtvapp="https://www.rtp.pt/play/">RTP Play</button></div>`:""}
+    <div class="code"><input id="tvText" placeholder="${c.kind==="gtv"?"Pesquisar na TV e Enter…":"Escrever na TV e Enter…"}" style="letter-spacing:0;font-size:16px;width:100%;max-width:320px"></div>
     ${c.kind==="lg" && br.running ? `<div class="btns" style="justify-content:center"><button class="b g" data-lgopen>🚀 Abrir a LUMIN nesta LG</button></div>`:""}`;
   } else if (TV.pendingSTV){
     h += `<p class="empty">A ligar a <b>${esc(TV.pendingSTV.name)}</b>…<br>Se aparecer um pedido no ecrã da TV, carrega em <b>Permitir</b>.</p>`;
@@ -896,6 +907,15 @@ function pickDevice(d){
   if (d.kind==="web"){ TV.connected=d; st.set("lf_tv2",d); updTvBtn(); toast("🌐 A controlar o browser da TV"); return renderRemote(); }
   TV.pendingSTV = d; renderRemote(); N().stvConnect(d.kind, d.host);
 }
+function gtvCodeScreen(d){
+  $("#remote").innerHTML = `<div class="rm-h"><button class="ib" data-rclose>←</button><h2>Emparelhar ${esc(d.name)}</h2></div>
+    <p class="empty">A TV está a mostrar um código de <b>6 caracteres</b> (números e letras). Escreve-o aqui:</p>
+    <div class="code"><input id="gtvc" maxlength="6" autocomplete="off" autocapitalize="characters" style="width:230px;text-transform:uppercase"></div>
+    <div class="btns" style="justify-content:center"><button class="b g" id="gtvgo">Emparelhar</button></div>`;
+  const i=$("#gtvc"); i.focus();
+  const go=()=>{ const c=i.value.trim(); if(c.length<6) return; toast("A confirmar com a TV…"); N().gtvCode(d.host,c); };
+  $("#gtvgo").onclick=go; i.oninput=()=>{ if(i.value.trim().length===6) go(); };
+}
 function pickTV(d){
   $("#remote").innerHTML = `<div class="rm-h"><button class="ib" data-rclose>←</button><h2>Ligar a ${esc(d.name)}</h2></div>
     <p class="empty">Escreve o código de 4 dígitos que aparece no ecrã da TV.</p>
@@ -907,6 +927,16 @@ function pickTV(d){
     if (!ok){ TV.connected=null; toast("Código errado ou TV indisponível"); i.value=""; i.focus(); return; }
     st.set("lf_tv2",TV.connected); toast("📺 Ligado a "+d.name); updTvBtn(); renderRemote(); };
   $("#tvgo").onclick=go; i.oninput=()=>{ if(i.value.length===4) go(); };
+}
+/* Google TV: abre o filme na app oficial do serviço na TV (RTP Play, Rakuten...) */
+async function gtvWatch(link, prov){
+  toast("A enviar para a TV…");
+  let list=[]; try{ list = await resolveLinks(link); }catch{}
+  const want = normP(prov);
+  const hit = list.find(x=>{ const n=normP(x.provider); return (n===want||n.includes(want)||want.includes(n)) && (x.type==="free"||x.type==="ads"); }) || list.find(x=>x.type==="free"||x.type==="ads");
+  let url = hit ? hit.url : link;
+  try{ const r=new URL(url).searchParams.get("r"); if(r) url=r; }catch{}
+  tvDo({t:"link",url},"📺 A abrir na TV");
 }
 /* lado da TV (app ou browser): comandos recebidos */
 window.luminRemote = cmd => {
@@ -994,7 +1024,7 @@ $("#freeT").classList.toggle("on",freeOnly);
 $("#freeT").onclick=()=>{ freeOnly=!freeOnly; st.set("lf_free",freeOnly); $("#freeT").classList.toggle("on",freeOnly); toast(freeOnly?"A mostrar só o que é grátis em Portugal":"A mostrar tudo (inclui pagos)"); render(); };
 let qT; $("#q").addEventListener("input",()=>{ clearTimeout(qT); qT=setTimeout(render,350); });
 document.addEventListener("click",e=>{
-  const t=e.target.closest("[data-cats],[data-catsclose],[data-freetoggle],[data-diag],[data-rback],[data-mood],[data-nav],[data-cast],[data-tvplay],[data-tvopen],[data-k],[data-devpick],[data-rescan],[data-bridge],[data-lgopen],[data-tvforget],[data-tvserver],[data-castpick],[data-rclose],[data-iahide],[data-iaplay],[data-open],[data-more],[data-play],[data-restart],[data-close],[data-trailer],[data-watch],[data-fav]"); if(!t) return;
+  const t=e.target.closest("[data-gtvapp],[data-gtvwatch],[data-cats],[data-catsclose],[data-freetoggle],[data-diag],[data-rback],[data-mood],[data-nav],[data-cast],[data-tvplay],[data-tvopen],[data-k],[data-devpick],[data-rescan],[data-bridge],[data-lgopen],[data-tvforget],[data-tvserver],[data-castpick],[data-rclose],[data-iahide],[data-iaplay],[data-open],[data-more],[data-play],[data-restart],[data-close],[data-trailer],[data-watch],[data-fav]"); if(!t) return;
   const d=t.dataset;
   if (d.cats!==undefined) return openCats();
   if (d.catsclose!==undefined) return closeCats();
@@ -1008,6 +1038,8 @@ document.addEventListener("click",e=>{
     if (c && (c.kind==="lumin"||c.kind==="web") && k==="home") tvDo({t:"home"}); else if (c && (c.kind==="lumin"||c.kind==="web") && k==="search") tvDo({t:"search"}); else tvDo({t:"key",k});
     try{navigator.vibrate&&navigator.vibrate(12)}catch{} return; }
   else if (d.devpick!==undefined) return pickDevice(JSON.parse(d.devpick));
+  else if (d.gtvapp){ tvDo({t:"link",url:d.gtvapp},"📺 A abrir na TV"); return; }
+  else if (d.gtvwatch!==undefined){ gtvWatch(d.gtvwatch, d.prov); return; }
   else if (d.tvforget!==undefined){ TV.connected=null; st.set("lf_tv2",null); updTvBtn(); return openRemote(); }
   else if (d.diag!==undefined){ $("#remote").innerHTML = `<div class="rm-h"><button class="ib" data-rback>←</button><h2>🩺 Diagnóstico</h2><button class="ib" data-diag>↻</button></div>
       <pre style="white-space:pre-wrap;font-size:11px;line-height:1.45;color:#ddd;background:#ffffff0a;border:1px solid #ffffff14;border-radius:12px;padding:12px">${esc(N()?.diag?.()||"Sem registos.")}</pre>`; return; }
