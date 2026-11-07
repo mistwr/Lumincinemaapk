@@ -115,6 +115,12 @@ public class WatchActivity extends Activity {
         s.setUseWideViewPort(true);
         s.setSupportMultipleWindows(false);
         s.setJavaScriptCanOpenWindowsAutomatically(true);
+        // Muitos serviços (RTP Play, JustWatch TV...) recusam ou limitam o WebView ("; wv").
+        // Usamos o user-agent do Chrome normal do próprio aparelho.
+        String ua = s.getUserAgentString();
+        ua = ua.replace("; wv)", ")").replaceAll("Version/\\d+\\.\\d+ ", "");
+        s.setUserAgentString(ua);
+        Diag.log("Ver: UA=" + ua);
         CookieManager.getInstance().setAcceptCookie(true);
         CookieManager.getInstance().setAcceptThirdPartyCookies(web, true);
 
@@ -125,12 +131,22 @@ public class WatchActivity extends Activity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView v, String u) { return handle(Uri.parse(u)); }
             @Override
+            public void onReceivedError(WebView v, android.webkit.WebResourceRequest r, android.webkit.WebResourceError e) {
+                if (r.isForMainFrame()) Diag.log("Ver: erro " + e.getErrorCode() + " " + e.getDescription() + " em " + r.getUrl());
+            }
+            @Override
+            public void onReceivedHttpError(WebView v, android.webkit.WebResourceRequest r, android.webkit.WebResourceResponse resp) {
+                if (r.isForMainFrame()) Diag.log("Ver: HTTP " + resp.getStatusCode() + " em " + r.getUrl());
+            }
+            @Override
             public void onPageFinished(WebView v, String u) {
+                Diag.log("Ver: abriu " + u);
                 Uri uri = Uri.parse(u);
                 String host = uri.getHost() != null ? uri.getHost() : "";
                 if (host.endsWith("themoviedb.org") && !autoDone) {
                     autoDone = true;
                     v.evaluateJavascript(autoPickJs(provider), r -> {
+                        Diag.log("Ver: salto automático (" + provider + ") = " + r);
                         if (r == null || !r.contains("ok")) cover.setVisibility(View.GONE); // não encontrou: mostra a página
                     });
                 } else if (!host.endsWith("themoviedb.org") && !host.endsWith("justwatch.com")) {

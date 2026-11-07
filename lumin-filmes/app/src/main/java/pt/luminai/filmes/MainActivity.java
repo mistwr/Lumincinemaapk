@@ -142,6 +142,8 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void stvText(String kind, String host, String t) { SmartTv.text(MainActivity.this, kind, host, t); }
         @JavascriptInterface public void stvOpenUrl(String kind, String host, String url) { SmartTv.openUrl(MainActivity.this, kind, host, url); }
         // Ponte telemóvel -> TV
+        @JavascriptInterface public String diag() { return Diag.dump(); }
+        @JavascriptInterface public void diagLog(String s) { Diag.log("App: " + s); }
         @JavascriptInterface public String bridgeInfo() { return LocalBridge.info(MainActivity.this); }
         @JavascriptInterface public void bridgeStart() { LocalBridge.start(MainActivity.this); }
         @JavascriptInterface public void bridgeStop() { LocalBridge.stop(); }
