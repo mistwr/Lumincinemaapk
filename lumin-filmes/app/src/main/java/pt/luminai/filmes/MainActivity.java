@@ -27,6 +27,11 @@ import java.io.InputStream;
  */
 public class MainActivity extends Activity {
 
+    private CastHelper cast;
+
+    /** Executa JS na interface (usado pelo comando remoto). */
+    void runJs(String code) { if (web != null) web.evaluateJavascript(code, null); }
+
     private WebView web;
     private FrameLayout root;
     private View fullView;
@@ -83,6 +88,11 @@ public class MainActivity extends Activity {
         });
 
         hideBars();
+        RemoteHub.main = this;
+        try { cast = new CastHelper(this); } catch (Throwable t) { cast = null; }
+        // Na Android TV (ou se o utilizador ligou o "Modo TV"), arranca o servidor do comando
+        boolean isTv = ((android.app.UiModeManager) getSystemService(UI_MODE_SERVICE)).getCurrentModeType() == android.content.res.Configuration.UI_MODE_TYPE_TELEVISION;
+        if (isTv || getSharedPreferences("lumin", 0).getBoolean("tvmode", false)) RemoteHub.start(this);
         if (state != null) web.restoreState(state);
         else loadApp();
     }
@@ -114,6 +124,18 @@ public class MainActivity extends Activity {
         }
 
         /** Abre a página oficial do serviço dentro da LUMIN (WatchActivity). */
+        @JavascriptInterface public boolean castAvailable() { return cast != null && cast.available(); }
+        @JavascriptInterface public void castConnect() { runOnUiThread(() -> { if (cast != null) cast.choose(); }); }
+        @JavascriptInterface public void castMedia(final String url, final String title, final String poster) {
+            runOnUiThread(() -> { if (cast != null) cast.cast(url, title, poster); });
+        }
+        @JavascriptInterface public void tvDiscover() { RemoteHub.discover(MainActivity.this); }
+        @JavascriptInterface public void tvDiscoverStop() { RemoteHub.stopDiscover(MainActivity.this); }
+        @JavascriptInterface public void tvSend(String host, int port, String code, String json) { RemoteHub.send(host, port, code, json); }
+        @JavascriptInterface public String tvServerInfo() { return RemoteHub.info(MainActivity.this); }
+        @JavascriptInterface public void tvServerStart() { RemoteHub.start(MainActivity.this); }
+        @JavascriptInterface public void tvServerStop() { RemoteHub.stop(MainActivity.this); }
+
         @JavascriptInterface
         public void openInApp(final String url, final String title, final String provider) {
             runOnUiThread(() -> {
@@ -174,10 +196,16 @@ public class MainActivity extends Activity {
     @Override
     public boolean dispatchKeyEvent(KeyEvent e) {
         // Botões de play/pause do comando da TV
-        if (e.getAction() == KeyEvent.ACTION_DOWN && e.getKeyCode() == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
-            web.evaluateJavascript("(function(){var v=document.getElementById('vid');if(v&&v.src){v.paused?v.play():v.pause();}})()", null);
-            return true;
+        if (e.getAction() == KeyEvent.ACTION_DOWN) {
+            String a = null;
+            switch (e.getKeyCode()) {
+                case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE: case KeyEvent.KEYCODE_MEDIA_PLAY: case KeyEvent.KEYCODE_MEDIA_PAUSE: a = "playpause"; break;
+                case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD: a = "ffw"; break;
+                case KeyEvent.KEYCODE_MEDIA_REWIND: a = "rew"; break;
+            }
+            if (a != null) { web.evaluateJavascript("window.luminRemote && window.luminRemote({t:'media',a:'" + a + "'})", null); return true; }
         }
+        if (e.getKeyCode() == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE || e.getKeyCode() == KeyEvent.KEYCODE_MEDIA_FAST_FORWARD || e.getKeyCode() == KeyEvent.KEYCODE_MEDIA_REWIND) return true;
         return super.dispatchKeyEvent(e);
     }
 
@@ -192,6 +220,6 @@ public class MainActivity extends Activity {
 
     @Override protected void onSaveInstanceState(Bundle out) { super.onSaveInstanceState(out); web.saveState(out); }
     @Override protected void onPause() { super.onPause(); web.onPause(); }
-    @Override protected void onResume() { super.onResume(); web.onResume(); hideBars(); }
-    @Override protected void onDestroy() { if (web != null) web.destroy(); super.onDestroy(); }
+    @Override protected void onResume() { super.onResume(); web.onResume(); hideBars(); RemoteHub.top = new java.lang.ref.WeakReference<>(this); }
+    @Override protected void onDestroy() { if (RemoteHub.main == this) RemoteHub.main = null; if (web != null) web.destroy(); super.onDestroy(); }
 }
