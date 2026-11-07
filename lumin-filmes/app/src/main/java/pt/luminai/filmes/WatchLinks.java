@@ -22,7 +22,9 @@ final class WatchLinks {
         HttpURLConnection c = (HttpURLConnection) new URL(tmdbLink).openConnection();
         c.setConnectTimeout(10000); c.setReadTimeout(15000);
         c.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Mobile Safari/537.36");
-        c.setRequestProperty("Accept-Language", "pt-PT,pt;q=0.9");
+        c.setRequestProperty("Accept-Language", "pt-PT,pt;q=0.9,en;q=0.8");
+        c.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+        c.setInstanceFollowRedirects(true);
         InputStream in = c.getInputStream();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         byte[] b = new byte[16384]; int n;

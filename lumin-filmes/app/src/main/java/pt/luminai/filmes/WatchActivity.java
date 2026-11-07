@@ -38,6 +38,9 @@ public class WatchActivity extends Activity {
     private View fullView;
     private WebChromeClient.CustomViewCallback fullCb;
     private ProgressBar progress;
+    private TextView cover;          // "A abrir RTP Play…" enquanto salta da página do TMDB
+    private String provider;
+    private boolean autoDone = false;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -45,7 +48,7 @@ public class WatchActivity extends Activity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         String url = getIntent().getStringExtra("url");
         String title = getIntent().getStringExtra("title");
-        String provider = getIntent().getStringExtra("provider");
+        provider = getIntent().getStringExtra("provider");
         if (url == null) { finish(); return; }
 
         int bg = Color.parseColor("#050505");
@@ -90,6 +93,17 @@ public class WatchActivity extends Activity {
         web.setBackgroundColor(bg);
         col.addView(web, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
         root.addView(col);
+        cover = new TextView(this);
+        cover.setBackgroundColor(bg);
+        cover.setTextColor(Color.parseColor("#ffdda0"));
+        cover.setTextSize(TypedValue.COMPLEX_UNIT_SP, 17);
+        cover.setTypeface(Typeface.DEFAULT_BOLD);
+        cover.setGravity(Gravity.CENTER);
+        cover.setText("A abrir " + (provider != null ? provider : "o serviço") + "…");
+        cover.setVisibility(url.contains("themoviedb.org") ? View.VISIBLE : View.GONE);
+        FrameLayout.LayoutParams clp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        clp.topMargin = dp(56);
+        root.addView(cover, clp);
         setContentView(root);
 
         WebSettings s = web.getSettings();
@@ -110,6 +124,19 @@ public class WatchActivity extends Activity {
             @SuppressWarnings("deprecation")
             @Override
             public boolean shouldOverrideUrlLoading(WebView v, String u) { return handle(Uri.parse(u)); }
+            @Override
+            public void onPageFinished(WebView v, String u) {
+                Uri uri = Uri.parse(u);
+                String host = uri.getHost() != null ? uri.getHost() : "";
+                if (host.endsWith("themoviedb.org") && !autoDone) {
+                    autoDone = true;
+                    v.evaluateJavascript(autoPickJs(provider), r -> {
+                        if (r == null || !r.contains("ok")) cover.setVisibility(View.GONE); // não encontrou: mostra a página
+                    });
+                } else if (!host.endsWith("themoviedb.org") && !host.endsWith("justwatch.com")) {
+                    cover.setVisibility(View.GONE);
+                }
+            }
         });
 
         web.setWebChromeClient(new WebChromeClient() {
@@ -138,6 +165,22 @@ public class WatchActivity extends Activity {
         });
 
         if (state != null) web.restoreState(state); else web.loadUrl(url);
+    }
+
+    /**
+     * Na página "onde ver" do TMDB, escolhe o link oficial (JustWatch) do serviço pedido,
+     * preferindo grátis/anúncios, e salta logo para ele.
+     */
+    private static String autoPickJs(String provider) {
+        String p = org.json.JSONObject.quote(provider != null ? provider : "");
+        return "(function(P){function n(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'').replace(/(tv|play|plus|beta)+$/,'')}"
+            + "var want=n(P),best=null,rank=99,any=null,anyRank=99,order=['free','ads','flatrate','rent','buy'];"
+            + "document.querySelectorAll('a[href*=\"click.justwatch.com\"]').forEach(function(a){try{"
+            + "var cx=new URL(a.href).searchParams.get('cx').replace(/-/g,'+').replace(/_/g,'/');while(cx.length%4)cx+='=';"
+            + "var d=JSON.parse(atob(cx)).data[0].data;var m=n(d.provider);var r=order.indexOf(d.monetizationType);if(r<0)r=50;"
+            + "if(r<anyRank&&r<2){any=a.href;anyRank=r}"
+            + "if(want&&(m==want||m.indexOf(want)>=0||want.indexOf(m)>=0)&&r<rank){best=a.href;rank=r}"
+            + "}catch(e){}});var go=best||any;if(go){location.href=go;return 'ok'}return 'none'})(" + p + ")";
     }
 
     /** http(s) fica dentro da LUMIN; esquemas de apps (intent://, market://) abrem a app oficial se existir. */

@@ -556,7 +556,7 @@ function resolveLinks(link){
   if (linkCache.has(link)) return Promise.resolve(linkCache.get(link));
   return new Promise(res=>{
     const id = "c"+(++cbSeq); cbs[id] = l => { linkCache.set(link,l); res(l); };
-    setTimeout(()=>{ if(cbs[id]){ delete cbs[id]; res([]); } }, 20000);
+    setTimeout(()=>{ if(cbs[id]){ delete cbs[id]; res([]); } }, 6000);
     LuminNative.resolveLinks(link, id);
   });
 }
@@ -570,7 +570,8 @@ async function openWatch(link, prov, free, title){
   const cands = list.filter(x=>{ const n=normP(x.provider); return n===want || n.includes(want) || want.includes(n); })
     .sort((a,b)=>order.indexOf(a.type)-order.indexOf(b.type));
   const hit = cands[0] || (free ? list.find(x=>x.type==="free"||x.type==="ads") : null);
-  LuminNative.openInApp(hit ? hit.url : link, title||"", hit ? hit.provider : (prov||"Onde ver"));
+  // sem link resolvido: abre a página do TMDB e o ecrã "Ver" salta sozinho para o serviço (prov)
+  LuminNative.openInApp(hit ? hit.url : link, title||"", hit ? hit.provider : (prov||""));
 }
 function toggleFav(it){
   const i = myList.findIndex(x=>x.type===it.type&&x.id===it.id);
