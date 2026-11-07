@@ -844,7 +844,17 @@ window.__luminSTVs = list => { TV.stvs = list||[]; if ($("#remote").classList.co
 window.__luminSTVStatus = (host, s) => {
   const c = TV.connected;
   if (s==="code" && TV.pendingSTV && TV.pendingSTV.host===host){ return gtvCodeScreen(TV.pendingSTV); }
-  if (s==="ok"){ if (TV.pendingSTV && TV.pendingSTV.host===host){ TV.connected=TV.pendingSTV; TV.pendingSTV=null; st.set("lf_tv2",TV.connected); toast("✅ Ligado a "+TV.connected.name); updTvBtn(); renderRemote(); } return; }
+  if (s==="ok"){
+    // aceita o "ok" mesmo que o ecrã já tenha mudado (a TV pode responder um pouco depois)
+    const d = (TV.pendingSTV && TV.pendingSTV.host===host) ? TV.pendingSTV : (TV.stvs.find(x=>x.host===host) || (TV.lastPick && TV.lastPick.host===host ? TV.lastPick : null));
+    if (d && !(TV.connected && TV.connected.host===host)){
+      TV.connected=d; TV.pendingSTV=null; st.set("lf_tv2",d); toast("✅ Ligado a "+d.name); updTvBtn();
+      if (!$("#remote").classList.contains("on")) $("#remote").classList.add("on");
+      renderRemote();
+    }
+    return;
+  }
+  if (s.includes("recomeça")) return;   // envio repetido do código: ignorar
   if (s.startsWith("erro") || s.includes("recusado")){ if (TV.pendingSTV && TV.pendingSTV.host===host){ TV.pendingSTV=null; renderRemote(); } toast("TV: "+s); return; }
   toast(s);
 };
@@ -903,6 +913,7 @@ function renderRemote(){
   const ti=$("#tvText"); if(ti) ti.onkeydown=e=>{ if(e.key==="Enter"&&ti.value){ tvDo({t:"text",v:ti.value},"⌨️ Enviado"); ti.value=""; } };
 }
 function pickDevice(d){
+  TV.lastPick = d;
   if (d.kind==="lumin") return pickTV(d);
   if (d.kind==="web"){ TV.connected=d; st.set("lf_tv2",d); updTvBtn(); toast("🌐 A controlar o browser da TV"); return renderRemote(); }
   TV.pendingSTV = d; renderRemote(); N().stvConnect(d.kind, d.host);
@@ -913,7 +924,9 @@ function gtvCodeScreen(d){
     <div class="code"><input id="gtvc" maxlength="6" autocomplete="off" autocapitalize="characters" style="width:230px;text-transform:uppercase"></div>
     <div class="btns" style="justify-content:center"><button class="b g" id="gtvgo">Emparelhar</button></div>`;
   const i=$("#gtvc"); i.focus();
-  const go=()=>{ const c=i.value.trim(); if(c.length<6) return; toast("A confirmar com a TV…"); N().gtvCode(d.host,c); };
+  let sent=false;
+  const go=()=>{ const c=i.value.trim(); if(c.length<6 || sent) return; sent=true; $("#gtvgo").disabled=true; toast("A confirmar com a TV…"); N().gtvCode(d.host,c);
+    setTimeout(()=>{ if(!(TV.connected&&TV.connected.host===d.host)){ sent=false; $("#gtvgo") && ($("#gtvgo").disabled=false); } },12000); };
   $("#gtvgo").onclick=go; i.oninput=()=>{ if(i.value.trim().length===6) go(); };
 }
 function pickTV(d){
