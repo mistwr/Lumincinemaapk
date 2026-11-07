@@ -135,6 +135,17 @@ public class MainActivity extends Activity {
         @JavascriptInterface public String tvServerInfo() { return RemoteHub.info(MainActivity.this); }
         @JavascriptInterface public void tvServerStart() { RemoteHub.start(MainActivity.this); }
         @JavascriptInterface public void tvServerStop() { RemoteHub.stop(MainActivity.this); }
+        // Smart TVs (Samsung, LG, Roku)
+        @JavascriptInterface public void stvDiscover() { SmartTv.discover(MainActivity.this); SmartTv.push(); }
+        @JavascriptInterface public void stvConnect(String kind, String host) { SmartTv.connect(MainActivity.this, kind, host); }
+        @JavascriptInterface public void stvKey(String kind, String host, String k) { SmartTv.key(MainActivity.this, kind, host, k); }
+        @JavascriptInterface public void stvText(String kind, String host, String t) { SmartTv.text(MainActivity.this, kind, host, t); }
+        @JavascriptInterface public void stvOpenUrl(String kind, String host, String url) { SmartTv.openUrl(MainActivity.this, kind, host, url); }
+        // Ponte telemóvel -> TV
+        @JavascriptInterface public String bridgeInfo() { return LocalBridge.info(MainActivity.this); }
+        @JavascriptInterface public void bridgeStart() { LocalBridge.start(MainActivity.this); }
+        @JavascriptInterface public void bridgeStop() { LocalBridge.stop(); }
+        @JavascriptInterface public void bridgePush(String json) { LocalBridge.push(json); }
 
         @JavascriptInterface
         public void openInApp(final String url, final String title, final String provider) {
