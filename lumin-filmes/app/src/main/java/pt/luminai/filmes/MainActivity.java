@@ -104,13 +104,37 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** Ponte JS: abrir serviços oficiais (Rakuten, Plex, RTP Play...) fora da app. */
+    /** Ponte JS ↔ Android. */
     private class Bridge {
         @JavascriptInterface
         public void openExternal(final String url) {
             runOnUiThread(() -> {
                 try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); } catch (Exception ignored) {}
             });
+        }
+
+        /** Abre a página oficial do serviço dentro da LUMIN (WatchActivity). */
+        @JavascriptInterface
+        public void openInApp(final String url, final String title, final String provider) {
+            runOnUiThread(() -> {
+                Intent i = new Intent(MainActivity.this, WatchActivity.class);
+                i.putExtra("url", url); i.putExtra("title", title); i.putExtra("provider", provider);
+                startActivity(i);
+            });
+        }
+
+        /**
+         * Lê a página "onde ver" do TMDB e devolve os links diretos de cada serviço
+         * (fornecidos pela JustWatch) como JSON para window.__luminLinks(id, json).
+         */
+        @JavascriptInterface
+        public void resolveLinks(final String tmdbLink, final String cbId) {
+            new Thread(() -> {
+                String json = "[]";
+                try { json = WatchLinks.resolve(tmdbLink); } catch (Exception ignored) {}
+                final String js = "window.__luminLinks && window.__luminLinks(" + org.json.JSONObject.quote(cbId) + "," + json + ")";
+                runOnUiThread(() -> web.evaluateJavascript(js, null));
+            }).start();
         }
     }
 
