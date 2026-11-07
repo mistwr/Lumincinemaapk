@@ -156,7 +156,10 @@ final class GoogleTv {
     static void finishPairing(final Context ctx, final String host, final String codeIn) {
         new Thread(() -> {
             Pairing p; synchronized (pairings) { p = pairings.remove(host); }
-            if (p == null) { SmartTv.status(host, "erro: recomeça o emparelhamento"); return; }
+            if (p == null) {
+                if (paired(ctx, host)) return;   // código enviado duas vezes: já está emparelhada
+                SmartTv.status(host, "erro: recomeça o emparelhamento"); return;
+            }
             try {
                 String code = codeIn.trim().toUpperCase();
                 RSAPublicKey c = (RSAPublicKey) clientCert(ctx).getPublicKey(), sv = (RSAPublicKey) p.server.getPublicKey();
@@ -185,7 +188,7 @@ final class GoogleTv {
 
     // ---------------- comando (porta 6466) ----------------
     static final class Remote {
-        SSLSocket s; OutputStream out; volatile boolean ok;
+        SSLSocket s; OutputStream out; volatile boolean ok, active;
         synchronized void send(byte[] m) throws Exception { GoogleTv.send(out, m); }
     }
 
@@ -216,6 +219,7 @@ final class GoogleTv {
                         r.send(msg(new Pb().m(1, new Pb().i(1, 611).m(2, new Pb().s(1, model).s(2, Build.MANUFACTURER).i(3, 1).s(4, "1").s(5, "atvremote").s(6, "1.0.0")))));
                     } else if (f.containsKey(2)) { // remote_set_active
                         r.send(msg(new Pb().m(2, new Pb().i(1, 611))));
+                        r.active = true;
                         SmartTv.status(host, "ok");
                     } else if (f.containsKey(8)) { // ping -> pong
                         long v = 0;
@@ -238,7 +242,8 @@ final class GoogleTv {
             try {
                 if (!paired(ctx, host)) { startPairing(ctx, host); return; }
                 SmartTv.status(host, "A ligar…");
-                remote(ctx, host);
+                Remote r = remote(ctx, host);
+                if (r.active) SmartTv.status(host, "ok");   // já estava ligada
             } catch (Exception e) {
                 Diag.log("GoogleTV: " + e);
                 startPairing(ctx, host);
