@@ -95,6 +95,7 @@ public class MainActivity extends Activity {
         if (isTv || getSharedPreferences("lumin", 0).getBoolean("tvmode", false)) RemoteHub.start(this);
         if (state != null) web.restoreState(state);
         else loadApp();
+        deepLink(getIntent());
     }
 
     private static final String BASE_HOST = "app.luminai.pt";
@@ -142,6 +143,8 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void stvText(String kind, String host, String t) { SmartTv.text(MainActivity.this, kind, host, t); }
         @JavascriptInterface public void stvOpenUrl(String kind, String host, String url) { SmartTv.openUrl(MainActivity.this, kind, host, url); }
         // Ponte telemóvel -> TV
+        @JavascriptInterface public void gtvCode(String host, String code) { GoogleTv.finishPairing(MainActivity.this, host, code); }
+        @JavascriptInterface public void gtvPair(String host) { GoogleTv.startPairing(MainActivity.this, host); }
         @JavascriptInterface public String diag() { return Diag.dump(); }
         @JavascriptInterface public void diagLog(String s) { Diag.log("App: " + s); }
         @JavascriptInterface public String bridgeInfo() { return LocalBridge.info(MainActivity.this); }
@@ -199,6 +202,22 @@ public class MainActivity extends Activity {
                 | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
     }
+
+    /** luminfilmes://open?key=movie:123  ou  luminfilmes://play?src=...&title=... (enviado pelo comando) */
+    private void deepLink(Intent i) {
+        if (i == null || i.getData() == null || !"luminfilmes".equals(i.getData().getScheme())) return;
+        Uri u = i.getData();
+        try {
+            org.json.JSONObject cmd = new org.json.JSONObject();
+            if ("play".equals(u.getHost())) { cmd.put("t", "play"); cmd.put("src", u.getQueryParameter("src")); cmd.put("title", u.getQueryParameter("title")); }
+            else { cmd.put("t", "open"); cmd.put("key", u.getQueryParameter("key")); }
+            final String js = "setTimeout(function(){window.luminRemote&&window.luminRemote(" + cmd + ")},1500)";
+            web.postDelayed(() -> runJs(js), 300);
+        } catch (Exception ignored) {}
+    }
+
+    @Override
+    protected void onNewIntent(Intent i) { super.onNewIntent(i); deepLink(i); }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {

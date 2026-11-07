@@ -44,6 +44,7 @@ final class SmartTv {
 
     // ---------------- descoberta ----------------
     static void discover(final Context ctx) {
+        GoogleTv.discover(ctx);
         if (scanning) return;
         scanning = true;
         Diag.log("SSDP: a procurar TVs… (IP deste telemóvel: " + RemoteHub.ip(ctx) + ")");
@@ -120,6 +121,16 @@ final class SmartTv {
         } catch (Exception e) { return ""; }
     }
 
+    static void add(String kind, String host, String name) {
+        try {
+            String key = kind + "@" + host;
+            synchronized (found) { if (found.containsKey(key)) return; }
+            JSONObject o = new JSONObject(); o.put("kind", kind); o.put("host", host); o.put("name", name);
+            synchronized (found) { found.put(key, o); }
+            push();
+        } catch (Exception ignored) {}
+    }
+
     static void push() {
         JSONArray a = new JSONArray();
         synchronized (found) { for (JSONObject o : found.values()) a.put(o); }
@@ -128,6 +139,7 @@ final class SmartTv {
 
     // ---------------- comandos ----------------
     static void key(Context ctx, String kind, String host, String k) {
+        if ("gtv".equals(kind)) { GoogleTv.key(ctx, host, k); return; }
         new Thread(() -> {
             try {
                 if ("roku".equals(kind)) roku(host, k);
@@ -137,6 +149,7 @@ final class SmartTv {
     }
 
     static void text(Context ctx, String kind, String host, String t) {
+        if ("gtv".equals(kind)) { GoogleTv.openLink(ctx, host, "https://www.google.com/search?q=" + java.net.URLEncoder.encode(t)); return; }
         new Thread(() -> {
             try {
                 if ("roku".equals(kind)) { for (char ch : t.toCharArray()) post("http://" + host + ":8060/keypress/Lit_" + java.net.URLEncoder.encode(String.valueOf(ch), "UTF-8")); }
@@ -146,12 +159,14 @@ final class SmartTv {
     }
 
     static void openUrl(Context ctx, String kind, String host, String url) {
+        if ("gtv".equals(kind)) { GoogleTv.openLink(ctx, host, url); return; }
         new Thread(() -> {
             try { conn(ctx, kind, host).openUrl(url); } catch (Exception e) { status(host, "erro: " + e.getMessage()); }
         }).start();
     }
 
     static void connect(Context ctx, String kind, String host) {
+        if ("gtv".equals(kind)) { GoogleTv.connectRemote(ctx, host); return; }
         new Thread(() -> {
             try {
                 if ("roku".equals(kind)) {
