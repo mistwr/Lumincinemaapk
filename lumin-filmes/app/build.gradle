@@ -1,0 +1,30 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'pt.luminai.filmes'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'pt.luminai.filmes'
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+    signingConfigs {
+        release {
+            def ks = System.getenv('LUMIN_KEYSTORE')
+            if (ks) {
+                storeFile file(ks)
+                storePassword System.getenv('LUMIN_KEYSTORE_PASS')
+                keyAlias System.getenv('LUMIN_KEY_ALIAS') ?: 'lumin'
+                keyPassword System.getenv('LUMIN_KEYSTORE_PASS')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig System.getenv('LUMIN_KEYSTORE') ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
+}

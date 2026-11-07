@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#050505">
+<title>LUMIN Filmes</title>
+<style>
+:root{--bg:#050505;--card:#13120f;--gold:#e7b95f;--gold2:#ffdda0;--txt:#f4efe6;--mut:#9d978d;--line:rgba(255,221,160,.13)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+body{padding-bottom:40px}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top));background:linear-gradient(#050505,#050505ee 70%,transparent)}
+.brand{font-weight:900;letter-spacing:-.03em;font-size:20px}.brand b{color:var(--gold2)}
+.search{margin-left:auto;flex:0 1 260px;display:flex;align-items:center;background:#100f0c;border:1px solid var(--line);border-radius:999px;padding:0 12px}
+.search input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--txt);padding:9px 6px;font:inherit;font-size:14px}
+.hero{position:relative;margin:4px 16px 18px;border-radius:22px;overflow:hidden;min-height:260px;display:flex;align-items:flex-end;background:#111 center/cover}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#050505 5%,#050505aa 45%,transparent)}
+.hero .in{position:relative;z-index:1;padding:20px;max-width:560px}
+.badge{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.08em;color:#1a1305;background:var(--gold);border-radius:6px;padding:3px 7px;margin-bottom:8px}
+.hero h1{font-size:clamp(26px,5vw,40px);letter-spacing:-.03em;line-height:1.05}
+.hero p{color:#d9d2c5;margin:8px 0 14px;font-size:14px;line-height:1.45}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.b{padding:11px 18px;border-radius:12px;font-weight:800;font-size:14px;border:1px solid var(--line);background:#ffffff14}
+.b.p{background:var(--gold);color:#1a1305;border-color:var(--gold)}
+.row{margin:0 0 18px}
+.row h2{font-size:16px;font-weight:800;margin:0 16px 10px}
+.rail{display:flex;gap:10px;overflow-x:auto;padding:4px 16px 8px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.card{flex:0 0 150px;scroll-snap-align:start;text-align:left;border-radius:14px;overflow:hidden;background:var(--card);border:2px solid transparent;outline:0;transition:transform .15s,border-color .15s}
+.card:focus,.card:hover{border-color:var(--gold);transform:scale(1.04)}
+.card .im{aspect-ratio:2/3;background:#1a1813 center/cover}
+.card .t{padding:8px 9px 3px;font-size:13px;font-weight:700;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .y{padding:0 9px 9px;font-size:11px;color:var(--mut)}
+.card .pg{height:3px;background:#ffffff1a}.card .pg i{display:block;height:100%;background:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;padding:0 16px}
+.grid .card{flex:auto}
+.empty{color:var(--mut);padding:30px 16px;text-align:center}
+/* detail */
+.sheet{position:fixed;inset:0;z-index:40;background:#000c;display:none;align-items:flex-end;justify-content:center}
+.sheet.on{display:flex}
+.sh{width:min(640px,100%);max-height:92vh;overflow:auto;background:#0e0d0b;border:1px solid var(--line);border-radius:22px 22px 0 0;padding-bottom:max(16px,env(safe-area-inset-bottom))}
+.sh .cover{aspect-ratio:16/9;background:#111 center/cover;position:relative}
+.sh .x{position:absolute;right:10px;top:10px;width:36px;height:36px;border-radius:50%;background:#000a;font-size:16px}
+.sh .bd{padding:16px}
+.sh h3{font-size:22px;letter-spacing:-.02em}
+.meta{color:var(--mut);font-size:13px;margin:6px 0 12px;display:flex;gap:10px;flex-wrap:wrap}
+.sh p{font-size:14px;line-height:1.5;color:#ddd5c8;margin-bottom:14px}
+.lic{font-size:12px;color:var(--mut);border-top:1px solid var(--line);margin-top:14px;padding-top:10px;line-height:1.5}
+.lic a{color:var(--gold2)}
+/* player */
+#player{position:fixed;inset:0;z-index:60;background:#000;display:none}
+#player.on{display:block}
+#player video{width:100%;height:100%;background:#000}
+#player .top{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:10px;padding:12px;padding-top:max(12px,env(safe-area-inset-top));background:linear-gradient(#000c,transparent);transition:opacity .3s}
+#player .top button{width:40px;height:40px;border-radius:50%;background:#0008;font-size:18px}
+#player .top span{font-weight:700;font-size:15px}
+#player.idle .top{opacity:0}
+.spin{position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px;border:3px solid #ffffff33;border-top-color:var(--gold);border-radius:50%;animation:s 1s linear infinite;display:none}
+#player.load .spin{display:block}
+@keyframes s{to{transform:rotate(360deg)}}
+footer{color:var(--mut);font-size:12px;line-height:1.5;padding:10px 16px 0;max-width:720px}
+@media(min-width:900px){.card{flex-basis:180px}.hero{min-height:380px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">LUMIN <b>Filmes</b></div>
+  <label class="search">🔎<input id="q" type="search" placeholder="Pesquisar filmes" autocomplete="off"></label>
+</header>
+
+<section class="hero" id="hero"></section>
+<main id="rows"></main>
+
+<footer>
+  Todos os filmes da LUMIN Filmes são de domínio público ou têm licença Creative Commons, e são transmitidos a partir do Internet Archive.
+  Os créditos e a licença de cada filme estão na página do filme. Grátis, sem conta e sem publicidade.
+</footer>
+
+<div class="sheet" id="sheet"><div class="sh" id="sh"></div></div>
+
+<div id="player">
+  <video id="vid" controls playsinline preload="metadata"></video>
+  <div class="spin"></div>
+  <div class="top"><button id="back" aria-label="Voltar">←</button><span id="ptitle"></span></div>
+</div>
+
+<script>
+const FILMS = [{"id": "bbb", "title": "Big Buck Bunny", "year": 2008, "cats": ["familia", "animacao"], "src": "https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4", "poster": "https://archive.org/services/img/BigBuckBunny_124", "page": "https://archive.org/details/BigBuckBunny_124", "dur": 596, "desc": "Um coelho gigante e bem-disposto vinga-se de três roedores trapaceiros.", "license": "CC BY 3.0", "credit": "Blender Foundation | www.blender.org"}, {"id": "sintel", "title": "Sintel", "year": 2010, "cats": ["animacao", "aventura"], "src": "https://archive.org/download/Sintel/sintel-2048-stereo_512kb.mp4", "poster": "https://archive.org/services/img/Sintel", "page": "https://archive.org/details/Sintel", "dur": 888, "desc": "Uma jovem atravessa terras perigosas à procura do pequeno dragão que criou.", "license": "CC BY 3.0", "credit": "Blender Foundation | durian.blender.org"}, {"id": "ed", "title": "Elephants Dream", "year": 2006, "cats": ["animacao"], "src": "https://archive.org/download/ElephantsDream/ed_hd.mp4", "poster": "https://archive.org/services/img/ElephantsDream", "page": "https://archive.org/details/ElephantsDream", "dur": 654, "desc": "Dois homens exploram uma máquina infinita e surreal.", "license": "CC BY 3.0", "credit": "Blender Foundation / Netherlands Media Art Institute"}, {"id": "tos", "title": "Tears of Steel", "year": 2012, "cats": ["aventura"], "src": "https://archive.org/download/Tears-of-Steel/tears_of_steel_720p.mp4", "poster": "https://archive.org/services/img/Tears-of-Steel", "page": "https://archive.org/details/Tears-of-Steel", "dur": 734, "desc": "Ficção científica em Amesterdão: um grupo tenta salvar o mundo dos robôs.", "license": "CC BY 3.0", "credit": "Blender Foundation | mango.blender.org"}, {"id": "cosmos", "title": "Cosmos Laundromat", "year": 2015, "cats": ["animacao", "aventura"], "src": "https://archive.org/download/CosmosLaundromatFirstCycle/Cosmos%20Laundromat%20-%20First%20Cycle%20%281080p%29.mp4", "poster": "https://archive.org/services/img/CosmosLaundromatFirstCycle", "page": "https://archive.org/details/CosmosLaundromatFirstCycle", "dur": 731, "desc": "Uma ovelha desiludida recebe uma proposta misteriosa que lhe muda a vida.", "license": "CC BY 4.0", "credit": "Blender Institute"}, {"id": "spring", "title": "Spring", "year": 2019, "cats": ["familia", "animacao"], "src": "https://archive.org/download/spring_blenderopenmovie/Spring%20-%20Blender%20Open%20Movie%20-%20YouTube.mp4", "poster": "https://archive.org/services/img/spring_blenderopenmovie", "page": "https://archive.org/details/spring_blenderopenmovie", "dur": 464, "desc": "Uma pastora e o seu cão enfrentam os espíritos antigos para que a primavera volte.", "license": "CC BY 4.0", "credit": "Blender Animation Studio"}, {"id": "xmas1910", "title": "Um Conto de Natal (A Christmas Carol)", "year": 1910, "cats": ["natal", "classicos"], "src": "https://archive.org/download/AChristmasCarol1910/A-Christmas-Carol--1910.mp4", "poster": "https://archive.org/services/img/AChristmasCarol1910", "page": "https://archive.org/details/AChristmasCarol1910", "dur": 625, "desc": "A primeira adaptação ao cinema do Scrooge de Charles Dickens.", "license": "Domínio público", "credit": "Edison Studios · J. Searle Dawley"}, {"id": "xmas1905", "title": "A Noite de Natal (The Night Before Christmas)", "year": 1905, "cats": ["natal", "classicos", "familia"], "src": "https://archive.org/download/TheNightBeforeChristmas1905/NightBeforeXmas512.mp4", "poster": "https://archive.org/services/img/TheNightBeforeChristmas1905", "page": "https://archive.org/details/TheNightBeforeChristmas1905", "dur": 517, "desc": "O Pai Natal prepara o trenó e voa pela noite de Natal.", "license": "Domínio público", "credit": "Edison Studios · Edwin S. Porter"}, {"id": "nemo", "title": "Little Nemo", "year": 1911, "cats": ["animacao", "familia", "classicos"], "src": "https://archive.org/download/animations-of-winsor-mccay1911-1921/01.%20Little%20Nemo%281911%29.mp4", "poster": "https://archive.org/services/img/animations-of-winsor-mccay1911-1921", "page": "https://archive.org/details/animations-of-winsor-mccay1911-1921", "dur": 693, "desc": "Um dos primeiros desenhos animados da história, de Winsor McCay.", "license": "Domínio público", "credit": "Winsor McCay"}, {"id": "gertie", "title": "Gertie, o Dinossauro", "year": 1914, "cats": ["animacao", "familia", "classicos"], "src": "https://archive.org/download/animations-of-winsor-mccay1911-1921/03.%20Gertie%20the%20Dinosaur%281914%29.mp4", "poster": "https://archive.org/services/img/animations-of-winsor-mccay1911-1921", "page": "https://archive.org/details/animations-of-winsor-mccay1911-1921", "dur": 831, "desc": "A dinossaura mais simpática do cinema mudo.", "license": "Domínio público", "credit": "Winsor McCay"}, {"id": "gertietour", "title": "Gertie em Digressão", "year": 1921, "cats": ["animacao", "familia"], "src": "https://archive.org/download/animations-of-winsor-mccay1911-1921/09.%20Gertie%20on%20Tour%281921%29.mp4", "poster": "https://archive.org/services/img/animations-of-winsor-mccay1911-1921", "page": "https://archive.org/details/animations-of-winsor-mccay1911-1921", "dur": 126, "desc": "A Gertie volta para uma viagem divertida.", "license": "Domínio público", "credit": "Winsor McCay"}, {"id": "flip", "title": "O Circo do Flip", "year": 1921, "cats": ["animacao", "familia"], "src": "https://archive.org/download/animations-of-winsor-mccay1911-1921/10.%20Flip%27s%20Circus%20%281921%29.mp4", "poster": "https://archive.org/services/img/animations-of-winsor-mccay1911-1921", "page": "https://archive.org/details/animations-of-winsor-mccay1911-1921", "dur": 345, "desc": "Palhaçadas animadas no circo.", "license": "Domínio público", "credit": "Winsor McCay"}, {"id": "mosquito", "title": "Como Funciona um Mosquito", "year": 1912, "cats": ["animacao", "classicos"], "src": "https://archive.org/download/animations-of-winsor-mccay1911-1921/02.%20How%20a%20Mosquito%20Operates%281912%29.mp4", "poster": "https://archive.org/services/img/animations-of-winsor-mccay1911-1921", "page": "https://archive.org/details/animations-of-winsor-mccay1911-1921", "dur": 388, "desc": "Um mosquito gigante e guloso ataca um homem a dormir.", "license": "Domínio público", "credit": "Winsor McCay"}, {"id": "moon", "title": "Viagem à Lua", "year": 1902, "cats": ["classicos", "aventura", "familia"], "src": "https://archive.org/download/ATripToTheMoonGeorgeMelies/A%20Trip%20to%20the%20Moon-George%20M%C3%A9li%C3%A8s.mp4", "poster": "https://archive.org/services/img/ATripToTheMoonGeorgeMelies", "page": "https://archive.org/details/ATripToTheMoonGeorgeMelies", "dur": 772, "desc": "O clássico de Méliès: cientistas disparados num foguetão até à Lua.", "license": "Domínio público", "credit": "Georges Méliès"}, {"id": "train", "title": "O Grande Assalto ao Comboio", "year": 1903, "cats": ["classicos", "aventura"], "src": "https://archive.org/download/TheGreatTrainRobbery1903_201307/The%20Great%20Train%20Robbery%20%281903%29.mp4", "poster": "https://archive.org/services/img/TheGreatTrainRobbery1903_201307", "page": "https://archive.org/details/TheGreatTrainRobbery1903_201307", "dur": 690, "desc": "O primeiro grande western da história do cinema.", "license": "Domínio público", "credit": "Edwin S. Porter"}, {"id": "nosferatu", "title": "Nosferatu", "year": 1922, "cats": ["classicos", "terror"], "src": "https://archive.org/download/Nosferatu_most_complete_version_93_mins./Nosferatu_1922_Symphony_of_Horror_512kb.mp4", "poster": "https://archive.org/services/img/Nosferatu_most_complete_version_93_mins.", "page": "https://archive.org/details/Nosferatu_most_complete_version_93_mins.", "dur": 5602, "desc": "O vampiro original do expressionismo alemão.", "license": "Domínio público", "credit": "F. W. Murnau"}, {"id": "caligari", "title": "O Gabinete do Dr. Caligari", "year": 1920, "cats": ["classicos", "terror"], "src": "https://archive.org/download/DasKabinettdesDoktorCaligariTheCabinetofDrCaligari/The_Cabinet_of_Dr._Caligari_512kb.mp4", "poster": "https://archive.org/services/img/DasKabinettdesDoktorCaligariTheCabinetofDrCaligari", "page": "https://archive.org/details/DasKabinettdesDoktorCaligariTheCabinetofDrCaligari", "dur": 3061, "desc": "Um hipnotizador e um sonâmbulo espalham o terror numa vila.", "license": "Domínio público", "credit": "Robert Wiene"}, {"id": "blossoms", "title": "Lírio Quebrado (Broken Blossoms)", "year": 1919, "cats": ["classicos", "drama"], "src": "https://archive.org/download/brokenblossoms1919/Broken_Blossoms_512kb.mp4", "poster": "https://archive.org/services/img/brokenblossoms1919", "page": "https://archive.org/details/brokenblossoms1919", "dur": 5329, "desc": "Drama clássico de D. W. Griffith com Lillian Gish.", "license": "Domínio público", "credit": "D. W. Griffith"}, {"id": "intolerance", "title": "Intolerância", "year": 1916, "cats": ["classicos", "drama"], "src": "https://archive.org/download/Intolerance/Intolerance_512kb.mp4", "poster": "https://archive.org/services/img/Intolerance", "page": "https://archive.org/details/Intolerance", "dur": 10587, "desc": "A obra monumental de Griffith: quatro histórias em quatro épocas.", "license": "Domínio público", "credit": "D. W. Griffith"}];
+const CATS = [
+  ["natal","🎄 Natal em família"],["familia","👨‍👩‍👧 Para toda a família"],["animacao","✨ Animação"],
+  ["aventura","🚀 Aventura e ficção"],["classicos","🎞️ Clássicos do cinema"],["terror","🦇 Clássicos de terror"],["drama","🎭 Drama"]
+];
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = s => s>=3600 ? `${Math.floor(s/3600)}h ${Math.round(s%3600/60)}min` : `${Math.max(1,Math.round(s/60))} min`;
+const store = {
+  get(){ try{ return JSON.parse(localStorage.getItem("lumin_filmes_prog")||"{}") }catch{ return {} } },
+  set(v){ try{ localStorage.setItem("lumin_filmes_prog",JSON.stringify(v)) }catch{} }
+};
+let prog = store.get();
+
+function card(f){
+  const p = prog[f.id], pct = p && p.t>0 ? Math.min(100, p.t/f.dur*100) : 0;
+  return `<button class="card" data-id="${f.id}">
+    <div class="im" style="background-image:url('${f.poster}')"></div>
+    ${pct?`<div class="pg"><i style="width:${pct}%"></i></div>`:""}
+    <div class="t">${esc(f.title)}</div><div class="y">${f.year} · ${fmt(f.dur)}</div></button>`;
+}
+
+function renderHero(){
+  const f = FILMS.find(x=>x.id==="xmas1910") || FILMS[0];
+  $("#hero").style.backgroundImage = `url('${f.poster}')`;
+  $("#hero").innerHTML = `<div class="in"><span class="badge">ESPECIAL NATAL</span><h1>${esc(f.title)}</h1>
+    <p>${esc(f.desc)}</p><div class="btns"><button class="b p" data-play="${f.id}">▶ Ver agora</button>
+    <button class="b" data-info="${f.id}">Mais informação</button></div></div>`;
+}
+
+function renderRows(){
+  const q = $("#q").value.trim().toLowerCase();
+  const rows = $("#rows");
+  if (q){
+    const r = FILMS.filter(f=>(f.title+" "+f.desc+" "+f.credit+" "+f.year).toLowerCase().includes(q));
+    $("#hero").style.display="none";
+    rows.innerHTML = `<div class="row"><h2>Resultados</h2>${r.length?`<div class="grid">${r.map(card).join("")}</div>`:`<div class="empty">Nenhum filme encontrado.</div>`}</div>`;
+    return;
+  }
+  $("#hero").style.display="";
+  let html = "";
+  const cont = FILMS.filter(f=>prog[f.id] && prog[f.id].t>20 && prog[f.id].t < f.dur-30).sort((a,b)=>prog[b.id].at-prog[a.id].at);
+  if (cont.length) html += `<div class="row"><h2>▶ Continuar a ver</h2><div class="rail">${cont.map(card).join("")}</div></div>`;
+  for (const [k,label] of CATS){
+    const list = FILMS.filter(f=>f.cats.includes(k));
+    if (list.length) html += `<div class="row"><h2>${label}</h2><div class="rail">${list.map(card).join("")}</div></div>`;
+  }
+  rows.innerHTML = html;
+}
+
+function openInfo(id){
+  const f = FILMS.find(x=>x.id===id); if(!f) return;
+  const p = prog[f.id];
+  $("#sh").innerHTML = `<div class="cover" style="background-image:url('${f.poster}')"><button class="x" data-close>✕</button></div>
+    <div class="bd"><h3>${esc(f.title)}</h3>
+    <div class="meta"><span>${f.year}</span><span>${fmt(f.dur)}</span><span>${esc(f.license)}</span></div>
+    <p>${esc(f.desc)}</p>
+    <div class="btns"><button class="b p" data-play="${f.id}">▶ ${p&&p.t>20?"Continuar":"Ver agora"}</button>
+    ${p&&p.t>20?`<button class="b" data-restart="${f.id}">↺ Do início</button>`:""}</div>
+    <div class="lic">Créditos: ${esc(f.credit)}<br>Licença: ${esc(f.license)}${f.license.startsWith("CC")?" · creativecommons.org":""}<br>
+    Fonte: <a href="${f.page}" target="_blank" rel="noopener">Internet Archive</a></div></div>`;
+  $("#sheet").classList.add("on");
+  setTimeout(()=>$("#sh [data-play]")?.focus(),50);
+}
+function closeInfo(){ $("#sheet").classList.remove("on"); }
+
+/* ---- player ---- */
+const vid = $("#vid"); let cur = null, idleT, saveT;
+function play(id, restart){
+  const f = FILMS.find(x=>x.id===id); if(!f) return;
+  closeInfo(); cur = f;
+  $("#ptitle").textContent = f.title;
+  $("#player").classList.add("on","load");
+  vid.src = f.src;
+  const start = !restart && prog[f.id] && prog[f.id].t < f.dur-30 ? prog[f.id].t : 0;
+  vid.addEventListener("loadedmetadata", ()=>{ if(start) vid.currentTime = start; }, {once:true});
+  vid.play().catch(()=>{});
+  const el = document.documentElement;
+  (el.requestFullscreen||el.webkitRequestFullscreen||(()=>{})).call(el)?.catch?.(()=>{});
+  try{ screen.orientation.lock("landscape").catch(()=>{}) }catch{}
+  wake();
+}
+function saveProg(){ if(!cur || !vid.currentTime) return; prog[cur.id] = {t:Math.floor(vid.currentTime), at:Date.now()}; store.set(prog); }
+function closePlayer(){
+  saveProg(); vid.pause(); vid.removeAttribute("src"); vid.load();
+  $("#player").classList.remove("on","load","idle"); cur=null;
+  if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  try{ screen.orientation.unlock() }catch{}
+  renderRows();
+}
+function wake(){ $("#player").classList.remove("idle"); clearTimeout(idleT); idleT=setTimeout(()=>$("#player").classList.add("idle"),3000); }
+vid.addEventListener("waiting",()=>$("#player").classList.add("load"));
+vid.addEventListener("playing",()=>$("#player").classList.remove("load"));
+vid.addEventListener("canplay",()=>$("#player").classList.remove("load"));
+vid.addEventListener("timeupdate",()=>{ clearTimeout(saveT); saveT=setTimeout(saveProg,1000); });
+vid.addEventListener("ended",()=>{ if(cur){ delete prog[cur.id]; store.set(prog);} closePlayer(); });
+vid.addEventListener("error",()=>{ $("#player").classList.remove("load"); alert("Não foi possível carregar o filme. Verifica a ligação à internet."); });
+["mousemove","touchstart","keydown"].forEach(e=>$("#player").addEventListener(e,wake,{passive:true}));
+$("#back").onclick = closePlayer;
+
+/* ---- eventos ---- */
+document.addEventListener("click", e=>{
+  const t = e.target.closest("[data-id],[data-play],[data-info],[data-restart],[data-close]"); if(!t) return;
+  if (t.dataset.play) play(t.dataset.play);
+  else if (t.dataset.restart) play(t.dataset.restart, true);
+  else if (t.dataset.info) openInfo(t.dataset.info);
+  else if (t.dataset.close!==undefined) closeInfo();
+  else if (t.dataset.id) openInfo(t.dataset.id);
+});
+$("#sheet").addEventListener("click", e=>{ if(e.target.id==="sheet") closeInfo(); });
+$("#q").addEventListener("input", renderRows);
+
+/* Comando da TV / teclado: setas navegam entre cartões, Back fecha */
+document.addEventListener("keydown", e=>{
+  if (e.key==="Escape" || e.key==="Backspace" && e.target.tagName!=="INPUT" || e.key==="GoBack"){
+    if ($("#player").classList.contains("on")){ e.preventDefault(); closePlayer(); return; }
+    if ($("#sheet").classList.contains("on")){ e.preventDefault(); closeInfo(); return; }
+  }
+  if ($("#player").classList.contains("on")){
+    if (e.key==="ArrowRight"){ vid.currentTime+=10; } else if (e.key==="ArrowLeft"){ vid.currentTime-=10; }
+    else if (e.key==="Enter"||e.key===" "||e.key==="MediaPlayPause"){ vid.paused?vid.play():vid.pause(); e.preventDefault(); }
+    return;
+  }
+  if (!["ArrowRight","ArrowLeft","ArrowUp","ArrowDown"].includes(e.key) || e.target.tagName==="INPUT") return;
+  const focusables = [...document.querySelectorAll(($("#sheet").classList.contains("on")?"#sheet ":"")+"button.card, .hero .b, #sheet .b, #sheet .x")].filter(el=>el.offsetParent);
+  const a = document.activeElement; if (!focusables.includes(a)){ focusables[0]?.focus(); e.preventDefault(); return; }
+  const r = a.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2;
+  let best=null, bd=1e9;
+  for (const el of focusables){ if(el===a) continue; const q=el.getBoundingClientRect(), x=q.left+q.width/2, y=q.top+q.height/2, dx=x-cx, dy=y-cy;
+    const ok = e.key==="ArrowRight"?dx>5&&Math.abs(dy)<r.height/2 : e.key==="ArrowLeft"?dx<-5&&Math.abs(dy)<r.height/2 : e.key==="ArrowDown"?dy>5 : dy<-5;
+    if(!ok) continue; const d = Math.abs(dx)+Math.abs(dy)*2; if(d<bd){bd=d;best=el} }
+  if (best){ best.focus(); best.scrollIntoView({block:"nearest",inline:"nearest",behavior:"smooth"}); e.preventDefault(); }
+});
+
+/* Botão "voltar" do Android (via ponte nativa) */
+window.luminBack = () => {
+  if ($("#player").classList.contains("on")){ closePlayer(); return true; }
+  if ($("#sheet").classList.contains("on")){ closeInfo(); return true; }
+  if ($("#q").value){ $("#q").value=""; renderRows(); return true; }
+  return false;
+};
+
+renderHero(); renderRows();
+</script>
+</body>
+</html>
