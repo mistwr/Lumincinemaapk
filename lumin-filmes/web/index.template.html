@@ -341,25 +341,25 @@ async function openItem(key){
         <div class="meta">${d.vote_average?`<span class="r">★ ${d.vote_average.toFixed(1)}</span>`:""}<span>${year}</span>${dur?`<span>${dur}</span>`:""}
           <span>${(d.genres||[]).map(g=>esc(g.name)).join(", ")}</span></div>
         <div class="btns">
-          ${free.length?`<button class="b p" data-watch="${esc(pv.link||"")}">▶ Ver grátis</button>`:""}
+          ${free.length?`<button class="b p" data-watch="${esc(pv.link||"")}" data-prov="${esc(free[0].provider_name)}" data-free="1" data-title="${esc(it.title)}">▶ Ver grátis</button>`:""}
           ${tr?`<button class="b ${free.length?"":"p"}" data-trailer="${tr.key}">🎬 Trailer</button>`:""}
           <button class="b" data-fav='${esc(JSON.stringify(it))}'>${inList?"♥ Na lista":"♡ A minha lista"}</button>
         </div>
         <p class="ov">${esc(ov||"Sem sinopse disponível.")}</p>
         <div class="sec">Onde ver em Portugal</div>
-        ${free.length ? `<div class="provs">${free.map(p=>provHTML(p,pv.link,true)).join("")}</div>`
+        ${free.length ? `<div class="provs">${free.map(p=>provHTML(p,pv.link,true,it.title)).join("")}</div>`
           : `<p class="ov" style="margin:0">Neste momento não está grátis em Portugal.</p>`}
-        ${paid.length ? `<div class="sec">Também com subscrição</div><div class="provs">${paid.map(p=>provHTML({...p,kind:"Subscrição"},pv.link,false)).join("")}</div>`:""}
+        ${paid.length ? `<div class="sec">Também com subscrição</div><div class="provs">${paid.map(p=>provHTML({...p,kind:"Subscrição"},pv.link,false,it.title)).join("")}</div>`:""}
         ${cast.length?`<div class="sec">Elenco</div><div class="cast">${cast.map(c=>`<div>${c.profile_path?`<img loading="lazy" src="${IMG}w185${c.profile_path}">`:"<span></span>"}<b>${esc(c.name)}</b>${esc(c.character||"")}</div>`).join("")}</div>`:""}
-        <div class="lic">Ao carregar num serviço abre a página oficial onde o título está disponível. Dados: TMDB e JustWatch.</div>
+        <div class="lic">Ao carregar num serviço, a página oficial abre dentro da LUMIN. Usa ← LUMIN para voltar. Dados: TMDB e JustWatch.</div>
       </div>`;
     setTimeout(()=>$("#sh .b")?.focus(),60);
   }catch(e){
     $("#sh .bd").innerHTML = `<div class="empty">Não foi possível carregar. Verifica a ligação.</div>`;
   }
 }
-function provHTML(p,link,free){
-  return `<button class="prov ${free?"free":"paid"}" data-watch="${esc(link||"")}"><img src="${IMG}w92${p.logo_path}" alt=""><span>${esc(p.provider_name)}<small>${p.kind}</small></span></button>`;
+function provHTML(p,link,free,title){
+  return `<button class="prov ${free?"free":"paid"}" data-watch="${esc(link||"")}" data-prov="${esc(p.provider_name)}" data-free="${free?1:""}" data-title="${esc(title)}"><img src="${IMG}w92${p.logo_path}" alt=""><span>${esc(p.provider_name)}<small>${p.kind}</small></span></button>`;
 }
 function openLumin(id){
   const f = LUMIN_FILMS.find(x=>x.id===id); if(!f) return;
@@ -380,10 +380,29 @@ function playTrailer(key){
   cov.insertAdjacentHTML("beforeend",`<iframe src="https://www.youtube.com/embed/${key}?autoplay=1&playsinline=1&rel=0&modestbranding=1&hl=pt" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`);
   cov.scrollIntoView({behavior:"smooth"});
 }
-function openWatch(link){
+/* Abre o serviço oficial DENTRO da LUMIN (ecrã "Ver" nativo) */
+const linkCache = new Map(); let cbSeq = 0; const cbs = {};
+window.__luminLinks = (id, list) => { const f = cbs[id]; delete cbs[id]; f && f(list||[]); };
+const normP = s => String(s||"").toLowerCase().replace(/[^a-z0-9]/g,"").replace(/(tv|play|plus)$/,"");
+function resolveLinks(link){
+  if (linkCache.has(link)) return Promise.resolve(linkCache.get(link));
+  return new Promise(res=>{
+    const id = "c"+(++cbSeq); cbs[id] = l => { linkCache.set(link,l); res(l); };
+    setTimeout(()=>{ if(cbs[id]){ delete cbs[id]; res([]); } }, 20000);
+    LuminNative.resolveLinks(link, id);
+  });
+}
+async function openWatch(link, prov, free, title){
   if (!link){ toast("Link indisponível"); return; }
-  if (window.LuminNative && LuminNative.openExternal) LuminNative.openExternal(link);
-  else window.open(link,"_blank","noopener");
+  if (!(window.LuminNative && LuminNative.openInApp)){ window.open(link,"_blank","noopener"); return; }
+  toast("A abrir "+(prov||"serviço")+"…");
+  const list = await resolveLinks(link);
+  const want = normP(prov);
+  const order = free ? ["free","ads","flatrate"] : ["flatrate","free","ads","rent","buy"];
+  const cands = list.filter(x=>{ const n=normP(x.provider); return n===want || n.includes(want) || want.includes(n); })
+    .sort((a,b)=>order.indexOf(a.type)-order.indexOf(b.type));
+  const hit = cands[0] || (free ? list.find(x=>x.type==="free"||x.type==="ads") : null);
+  LuminNative.openInApp(hit ? hit.url : link, title||"", hit ? hit.provider : (prov||"Onde ver"));
 }
 function toggleFav(it){
   const i = myList.findIndex(x=>x.type===it.type&&x.id===it.id);
@@ -440,7 +459,7 @@ document.addEventListener("click",e=>{
   else if (d.restart) play(d.restart,true);
   else if (d.close!==undefined) closeSheet();
   else if (d.trailer) playTrailer(d.trailer);
-  else if (d.watch!==undefined) openWatch(d.watch);
+  else if (d.watch!==undefined) openWatch(d.watch, d.prov, !!d.free, d.title);
   else if (d.fav) toggleFav(JSON.parse(d.fav));
 });
 $("#sheet").addEventListener("click",e=>{ if(e.target.id==="sheet") closeSheet(); });
