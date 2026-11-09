@@ -178,7 +178,7 @@ nav.bn button:focus{background:#ffffff14}
 .keys button:active{background:#ffffff22}
 .code{display:flex;gap:10px;justify-content:center;margin:12px 0}
 .code input{width:180px;text-align:center;font-size:28px;letter-spacing:.4em;font-weight:900;background:#ffffff0f;border:1px solid #ffffff22;border-radius:14px;color:#fff;padding:10px;outline:0}
-.tvcode{position:fixed;right:16px;bottom:96px;z-index:34;background:var(--glass);backdrop-filter:blur(14px);border:1px solid #ffffff1a;border-radius:16px;padding:10px 14px;font-size:12px;color:#ddd;display:none}
+.tvcode{position:fixed;right:24px;bottom:24px;z-index:36;z-index:34;background:var(--glass);backdrop-filter:blur(14px);border:1px solid #ffffff1a;border-radius:16px;padding:10px 14px;font-size:12px;color:#ddd;display:none}
 .tvcode b{display:block;font-size:22px;letter-spacing:.3em;color:var(--gold2)}
 footer{color:var(--mut);font-size:11.5px;line-height:1.55;padding:18px 14px 6px;max-width:760px;display:flex;gap:12px;align-items:flex-start}
 footer img{width:70px;flex:0 0 auto;margin-top:2px}
@@ -625,7 +625,8 @@ async function openItem(key){
           ${free.length?`<button class="b p" data-watch="${esc(pv.link||"")}" data-prov="${esc(free[0].provider_name)}" data-free="1" data-title="${esc(it.title)}">▶ ${free[0].nologin?"Ver já (sem login)":"Ver grátis"}</button>`:""}
           ${tr?`<button class="b ${free.length?"":"p"}" data-trailer="${tr.key}">🎬 Trailer</button>`:""}
           <button class="b" data-fav='${esc(JSON.stringify(it))}'>${inList?"♥ Na lista":"♡ Lista"}</button>
-          ${canSendTitle()&&TV.connected.kind!=="gtv"?`<button class="b" data-tvopen="${type}:${id}">📺 Abrir na TV</button>`:""}
+          ${canSendTitle()&&TV.connected.kind==="cloud"?`<button class="b g" data-tvwatchkey="${type}:${id}" data-hasfree="${free.length?1:""}">📺 Ver na TV</button>`:""}
+          ${canSendTitle()&&!["gtv","cloud"].includes(TV.connected.kind)?`<button class="b" data-tvopen="${type}:${id}">📺 Abrir na TV</button>`:""}
           ${TV.connected&&TV.connected.kind==="gtv"&&free.length?`<button class="b" data-gtvwatch="${esc(pv.link||"")}" data-prov="${esc(free[0].provider_name)}">📺 Ver na TV</button>`:""}
           ${TV.connected&&TV.connected.kind==="gtv"&&tr?`<button class="b" data-gtvapp="https://www.youtube.com/watch?v=${tr.key}">📺 Trailer na TV</button>`:""}
         </div>
@@ -669,17 +670,27 @@ function playTrailer(key){
 const linkCache = new Map(); let cbSeq = 0; const cbs = {};
 window.__luminLinks = (id, list) => { const f = cbs[id]; delete cbs[id]; f && f(list||[]); };
 const normP = s => String(s||"").toLowerCase().replace(/[^a-z0-9]/g,"").replace(/(tv|play|plus)$/,"");
-function resolveLinks(link){
-  if (linkCache.has(link)) return Promise.resolve(linkCache.get(link));
+function resolveOnce(fn, link, ms){
   return new Promise(res=>{
-    const id = "c"+(++cbSeq); cbs[id] = l => { linkCache.set(link,l); res(l); };
-    setTimeout(()=>{ if(cbs[id]){ delete cbs[id]; res([]); } }, 6000);
-    LuminNative.resolveLinks(link, id);
+    const id = "c"+(++cbSeq); cbs[id] = l => res(l||[]);
+    setTimeout(()=>{ if(cbs[id]){ delete cbs[id]; res([]); } }, ms);
+    try{ LuminNative[fn](link, id); }catch{ delete cbs[id]; res([]); }
   });
+}
+async function resolveLinks(link){
+  if (linkCache.has(link)) return linkCache.get(link);
+  let l = await resolveOnce("resolveLinks", link, 6000);
+  if (!l.length && LuminNative.resolveLinksWeb) l = await resolveOnce("resolveLinksWeb", link, 16000);
+  if (l.length) linkCache.set(link, l);
+  return l;
 }
 async function openWatch(link, prov, free, title){
   if (!link){ toast("Link indisponível"); return; }
-  if (!(window.LuminNative && LuminNative.openInApp)){ window.open(link,"_blank","noopener"); return; }
+  if (!(window.LuminNative && LuminNative.openInApp)){
+    // versão web (luminai.pt/tv): abre a página "onde ver" no mesmo separador (as TVs bloqueiam janelas novas)
+    if (window.LUMIN_SITE) location.href = link; else window.open(link,"_blank","noopener");
+    return;
+  }
   toast("A abrir "+(prov||"serviço")+"…");
   const list = await resolveLinks(link);
   try{ N().diagLog(`Ver "${title}" via ${prov}: ${list.length} links resolvidos no telemóvel`); }catch{}
@@ -803,10 +814,10 @@ function iaPlay(id, file, restart){
 /* ================= TV: Chromecast, LUMIN na TV, Smart TVs, ponte e comando ================= */
 const N = () => window.LuminNative || null;
 const TV = { connected: st.get("lf_tv2", null), devices: [], stvs: [], serverOn:false, bridge:{} };
-const KIND_IC = { lumin:"📺", web:"🌐", samsung:"🟦", lg:"🔴", roku:"🟪", gtv:"🟢" };
-const KIND_TX = { lumin:"LUMIN na TV", web:"LUMIN no browser da TV", samsung:"Samsung Smart TV", lg:"LG webOS", roku:"Roku", gtv:"Google TV / Android TV" };
+const KIND_IC = { lumin:"📺", web:"🌐", samsung:"🟦", lg:"🔴", roku:"🟪", gtv:"🟢", cloud:"🔗" };
+const KIND_TX = { lumin:"LUMIN na TV", web:"LUMIN no browser da TV", samsung:"Samsung Smart TV", lg:"LG webOS", roku:"Roku", gtv:"Google TV / Android TV", cloud:"LUMIN Link (luminai.pt/tv)" };
 const castOK = () => { try{ return !!(N() && N().castAvailable && N().castAvailable()); }catch{ return false; } };
-const canSendTitle = () => TV.connected && ["lumin","web","gtv"].includes(TV.connected.kind);
+const canSendTitle = () => TV.connected && ["lumin","web","gtv","cloud"].includes(TV.connected.kind);
 function castBtns(m){
   const j = esc(JSON.stringify(m));
   return (castOK()?`<button class="b" data-cast='${j}'>📡 Chromecast</button>`:"") + (canSendTitle()?`<button class="b" data-tvplay='${j}'>📺 Ver na TV</button>`:"");
@@ -827,6 +838,7 @@ async function tvDo(cmd, okMsg){
   let ok = true;
   if (c.kind==="lumin") ok = await tvSendLumin(cmd);
   else if (c.kind==="web") N().bridgePush(JSON.stringify(cmd));
+  else if (c.kind==="cloud"){ if(!LINK.phone || LINK.phone.code!==c.code) linkPhone(c.code,true); LINK.phone.send(cmd); }
   else if (c.kind==="gtv" && (cmd.t==="open"||cmd.t==="play")){
     const url = cmd.t==="play" ? `luminfilmes://play?src=${encodeURIComponent(cmd.src)}&title=${encodeURIComponent(cmd.title||"")}` : `luminfilmes://open?key=${encodeURIComponent(cmd.key)}`;
     N().stvOpenUrl("gtv", c.host, url);
@@ -865,9 +877,12 @@ function devBtn(d, sub){ return `<button class="dev" data-devpick='${esc(JSON.st
 function renderRemote(){
   const n = N();
   let h = `<div class="rm-h"><button class="ib" data-rclose>←</button><h2>📺 TV e comando</h2>${!TV.connected&&n?`<button class="ib" data-rescan title="Procurar outra vez">↻</button>`:""}</div>`;
-  if (!n){ $("#remote").innerHTML = h + `<p class="empty">Disponível na app LUMIN para Android.</p>`; return; }
-  const info = (()=>{ try{ return JSON.parse(n.tvServerInfo()||"{}"); }catch{ return {}; } })();
-  const br = (()=>{ try{ return JSON.parse(n.bridgeInfo()||"{}"); }catch{ return {}; } })();
+  const linkBox = `<div class="sec">🔗 Ligar a uma TV com a LUMIN aberta (luminai.pt/tv)</div>
+    <div class="code" style="flex-wrap:wrap"><input id="lkc" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="CÓDIGO" style="width:170px;text-transform:uppercase"><button class="b g" data-linkgo>Ligar</button></div>
+    <p class="empty" style="padding:0 0 6px">Na TV, abre <b>luminai.pt/tv</b> no browser e escreve aqui o código que aparece (ou lê o QR com a câmara).</p>`;
+  if (!n && !TV.connected){ $("#remote").innerHTML = h + linkBox; return; }
+  const info = (()=>{ try{ return JSON.parse(n?.tvServerInfo()||"{}"); }catch{ return {}; } })();
+  const br = (()=>{ try{ return JSON.parse(n?.bridgeInfo()||"{}"); }catch{ return {}; } })();
   TV.serverOn = !!info.running; TV.bridge = br; updTvBtn();
   if (TV.connected){
     const c=TV.connected;
@@ -883,6 +898,7 @@ function renderRemote(){
       <div class="btns" style="justify-content:center;margin-top:12px"><button class="b" data-gtvapp="https://www.youtube.com">▶ YouTube</button><button class="b" data-gtvapp="https://www.rtp.pt/play/">RTP Play</button></div>`:""}
     <div class="code"><input id="tvText" placeholder="${c.kind==="gtv"?"Pesquisar na TV e Enter…":"Escrever na TV e Enter…"}" style="letter-spacing:0;font-size:16px;width:100%;max-width:320px"></div>
     ${c.kind==="lg" && br.running ? `<div class="btns" style="justify-content:center"><button class="b g" data-lgopen>🚀 Abrir a LUMIN nesta LG</button></div>`:""}`;
+    if (c.kind==="cloud") h += `<p class="empty">Escolhe um filme no telemóvel e carrega <b>📺 Ver na TV</b>: abre logo na TV.</p><div class="btns" style="justify-content:center"><button class="b g" data-rclose>🎬 Escolher filmes</button></div>`;
   } else if (TV.pendingSTV){
     h += `<p class="empty">A ligar a <b>${esc(TV.pendingSTV.name)}</b>…<br>Se aparecer um pedido no ecrã da TV, carrega em <b>Permitir</b>.</p>`;
   } else {
@@ -890,7 +906,9 @@ function renderRemote(){
     const all = [...TV.devices, ...TV.stvs];
     h += all.length ? all.map(d=>devBtn(d)).join("") : `<p class="empty" style="text-align:left;padding:4px 0 10px">À procura de TVs… (Samsung, LG, Roku, Android TV com a LUMIN). O telemóvel e a TV têm de estar no mesmo Wi-Fi.</p>`;
     if (br.running) h += devBtn({kind:"web",name:"Browser da TV",host:br.ip}, "Controla a LUMIN aberta no browser da TV");
+    h += linkBox;
   }
+  if (!n){ $("#remote").innerHTML = h; return; }
   // ponte
   h += `<div class="sec">📲 Passar a LUMIN para a TV</div>`;
   if (br.running){
@@ -986,6 +1004,81 @@ if (window.LUMIN_BRIDGE){
 window.__luminServer = info => { TV.serverOn=!!info.running; updTvBtn(); const c=$("#tvcode");
   if (info.running && !$("#remote").classList.contains("on")){ c.innerHTML=`Comando LUMIN<b>${esc(info.code)}</b>`; c.style.display="block"; setTimeout(()=>c.style.display="none",12000); } };
 
+
+/* ================= LUMIN Link: TV ↔ telemóvel pela internet (QR + código) =================
+   Canal em tempo real (Supabase Realtime "broadcast"): nada é guardado, só passa a mensagem.
+   Escrito em JS simples para funcionar nos browsers das Smart TVs mais antigas. */
+var RELAY_WS = "wss://lblnhttwadvofhkhkbsv.supabase.co/realtime/v1/websocket?apikey=sb_publishable_FtAZo6j9r7xexaeqjzCqHQ_ngDFJ9cS&vsn=1.0.0";
+var SITE_TV = "https://luminai.pt/tv/";
+var CODE_ABC = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+function Relay(code, onMsg){
+  var self=this; this.code=code; this.ref=1; this.q=[]; this.ok=false;
+  function topic(){ return "realtime:lumin-tv-"+code; }
+  function open(){
+    try{ self.ws = new WebSocket(RELAY_WS); }catch(e){ return setTimeout(open,4000); }
+    self.ws.onopen = function(){
+      self.ws.send(JSON.stringify({topic:topic(),event:"phx_join",payload:{config:{broadcast:{self:false,ack:false},presence:{key:""}}},ref:String(self.ref++),join_ref:"1"}));
+      clearInterval(self.hb); self.hb=setInterval(function(){ try{ self.ws.send(JSON.stringify({topic:"phoenix",event:"heartbeat",payload:{},ref:String(self.ref++)})); }catch(e){} },25000);
+    };
+    self.ws.onmessage = function(ev){
+      var m; try{ m=JSON.parse(ev.data); }catch(e){ return; }
+      if (m.event==="phx_reply" && m.payload && m.payload.status==="ok" && m.topic===topic()){ self.ok=true; while(self.q.length) self._send(self.q.shift()); }
+      else if (m.event==="broadcast" && m.payload && m.payload.event==="cmd"){ onMsg && onMsg(m.payload.payload); }
+    };
+    self.ws.onclose = function(){ self.ok=false; clearInterval(self.hb); setTimeout(open,3000); };
+    self.ws.onerror = function(){ try{ self.ws.close(); }catch(e){} };
+  }
+  this._send = function(p){ this.ws.send(JSON.stringify({topic:topic(),event:"broadcast",payload:{type:"broadcast",event:"cmd",payload:p},ref:String(this.ref++)})); };
+  this.send = function(p){ if (this.ok) this._send(p); else this.q.push(p); };
+  open();
+}
+var LINK = { tv:null, phone:null };
+function newCode(){ var c=""; for(var i=0;i<4;i++) c+=CODE_ABC[Math.floor(Math.random()*CODE_ABC.length)]; return c; }
+/* lado da TV: recebe comandos; mostra QR + código */
+function startTvLink(){
+  if (LINK.tv) return;
+  var code = st.get("lf_tvlink", null); if (!code){ code=newCode(); st.set("lf_tvlink",code); }
+  LINK.tv = new Relay(code, function(cmd){
+    if (cmd.t==="hello"){ hideLinkBadge(); toast("📱 Telemóvel ligado. Já podes escolher no telemóvel"); LINK.tv.send({t:"hi",name:"TV LUMIN"}); return; }
+    hideLinkBadge();
+    if (cmd.t==="go"){ if (N() && N().openInApp) N().openInApp(cmd.url, cmd.title||"", cmd.prov||""); else location.href = cmd.url; return; }
+    if (cmd.t==="watch"){ closeRemote(); openItem(cmd.key).then(function(){ setTimeout(function(){ var b=document.querySelector("#sh [data-watch][data-free]"); if(b) b.click(); },600); }); return; }
+    window.luminRemote(cmd);
+  });
+  showLinkBadge(code);
+}
+function showLinkBadge(code){
+  var c=$("#tvcode"); var url=SITE_TV+"?remote="+code;
+  c.innerHTML = '<div style="display:flex;gap:14px;align-items:center"><div id="lkqr" style="background:#fff;border-radius:10px;padding:6px"></div>'
+    + '<div><div style="font-size:12px;color:#ccc">📱 Comanda com o telemóvel</div><div style="font-size:12px;color:#aaa;margin-top:4px">Lê o QR ou abre <b style="color:#fff">luminai.pt/tv</b></div>'
+    + '<b style="font-size:26px;letter-spacing:.25em;color:var(--gold2)">'+code+'</b></div></div>';
+  c.style.display="block"; drawQR($("#lkqr"), url);
+  var q=$("#lkqr svg"); if(q){ q.setAttribute("width","92"); q.setAttribute("height","92"); }
+}
+function hideLinkBadge(){ var c=$("#tvcode"); if(c) c.style.display="none"; }
+async function sendWatchToTv(key, hasFree){
+  if (!hasFree) return tvDo({t:"open",key},"📺 Aberto na TV");
+  const btn = document.querySelector("#sh [data-watch][data-free]");
+  if (N() && btn){
+    toast("📺 A preparar o filme para a TV…");
+    const list = await resolveLinks(btn.dataset.watch);
+    const want = normP(btn.dataset.prov);
+    const l = list.filter(x=>{ const n=normP(x.provider); return n===want||n.includes(want)||want.includes(n); }).sort((a,b)=>["free","ads","flatrate"].indexOf(a.type)-["free","ads","flatrate"].indexOf(b.type))[0]
+           || list.find(x=>x.type==="free"||x.type==="ads");
+    if (l) return tvDo({t:"go", url:l.target||l.url, title:btn.dataset.title||"", prov:l.provider}, "📺 A abrir "+l.provider+" na TV");
+  }
+  tvDo({t:"watch",key},"📺 A abrir na TV…");
+}
+/* lado do telemóvel: liga à TV pelo código */
+function linkPhone(code, quiet){
+  code = String(code||"").trim().toUpperCase(); if (code.length!==4) return false;
+  LINK.phone = new Relay(code, function(m){ if (m.t==="hi") toast("✅ TV encontrada"); });
+  LINK.phone.send({t:"hello"});
+  TV.connected = {kind:"cloud", code:code, name:"TV "+code}; st.set("lf_tv2", TV.connected); updTvBtn();
+  if (!quiet) toast("📺 Ligado à TV "+code);
+  return true;
+}
+
 /* QR code (para a APK) */
 function drawQR(el, text){
   try{ const q=qrcode(0,"M"); q.addData(text); q.make(); el.innerHTML=q.createSvgTag({cellSize:5,margin:2}); }catch{ el.textContent=text; }
@@ -1037,7 +1130,7 @@ $("#freeT").classList.toggle("on",freeOnly);
 $("#freeT").onclick=()=>{ freeOnly=!freeOnly; st.set("lf_free",freeOnly); $("#freeT").classList.toggle("on",freeOnly); toast(freeOnly?"A mostrar só o que é grátis em Portugal":"A mostrar tudo (inclui pagos)"); render(); };
 let qT; $("#q").addEventListener("input",()=>{ clearTimeout(qT); qT=setTimeout(render,350); });
 document.addEventListener("click",e=>{
-  const t=e.target.closest("[data-gtvapp],[data-gtvwatch],[data-cats],[data-catsclose],[data-freetoggle],[data-diag],[data-rback],[data-mood],[data-nav],[data-cast],[data-tvplay],[data-tvopen],[data-k],[data-devpick],[data-rescan],[data-bridge],[data-lgopen],[data-tvforget],[data-tvserver],[data-castpick],[data-rclose],[data-iahide],[data-iaplay],[data-open],[data-more],[data-play],[data-restart],[data-close],[data-trailer],[data-watch],[data-fav]"); if(!t) return;
+  const t=e.target.closest("[data-tvwatchkey],[data-linkgo],[data-gtvapp],[data-gtvwatch],[data-cats],[data-catsclose],[data-freetoggle],[data-diag],[data-rback],[data-mood],[data-nav],[data-cast],[data-tvplay],[data-tvopen],[data-k],[data-devpick],[data-rescan],[data-bridge],[data-lgopen],[data-tvforget],[data-tvserver],[data-castpick],[data-rclose],[data-iahide],[data-iaplay],[data-open],[data-more],[data-play],[data-restart],[data-close],[data-trailer],[data-watch],[data-fav]"); if(!t) return;
   const d=t.dataset;
   if (d.cats!==undefined) return openCats();
   if (d.catsclose!==undefined) return closeCats();
@@ -1051,6 +1144,8 @@ document.addEventListener("click",e=>{
     if (c && (c.kind==="lumin"||c.kind==="web") && k==="home") tvDo({t:"home"}); else if (c && (c.kind==="lumin"||c.kind==="web") && k==="search") tvDo({t:"search"}); else tvDo({t:"key",k});
     try{navigator.vibrate&&navigator.vibrate(12)}catch{} return; }
   else if (d.devpick!==undefined) return pickDevice(JSON.parse(d.devpick));
+  else if (d.tvwatchkey){ sendWatchToTv(d.tvwatchkey, !!d.hasfree); return; }
+  else if (d.linkgo!==undefined){ const v=$("#lkc").value; if(!linkPhone(v)) toast("O código tem 4 letras/números"); else renderRemote(); return; }
   else if (d.gtvapp){ tvDo({t:"link",url:d.gtvapp},"📺 A abrir na TV"); return; }
   else if (d.gtvwatch!==undefined){ gtvWatch(d.gtvwatch, d.prov); return; }
   else if (d.tvforget!==undefined){ TV.connected=null; st.set("lf_tv2",null); updTvBtn(); return openRemote(); }
@@ -1170,6 +1265,12 @@ const _setTab = setTab; setTab = function(){ _setTab(); const bn = ["search","me
 updTvBtn();
 try{ const i=JSON.parse(N()?.tvServerInfo()||"{}"); TV.serverOn=!!i.running; if(i.running) window.__luminServer(i); updTvBtn(); }catch{}
 setTimeout(()=>$("#splash").classList.add("off"), 1400);
+(function(){
+  let rc=null; try{ rc=new URLSearchParams(location.search).get("remote"); }catch{}
+  if (rc){ linkPhone(rc); setTimeout(openRemote, 1500); return; }
+  const isTvScreen = BIG() && !matchMedia("(pointer:fine)").matches || /tv|tizen|webos|smart-tv|smarttv|hbbtv|netcast|bravia|aft|crkey/i.test(navigator.userAgent) || /[?&]tv=1/.test(location.search);
+  if (isTvScreen || (window.LUMIN_SITE && BIG())) setTimeout(startTvLink, 1800);
+})();
 render();
 </script>
 </body>

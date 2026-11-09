@@ -145,6 +145,32 @@ public class MainActivity extends Activity {
         // Ponte telemóvel -> TV
         @JavascriptInterface public void gtvCode(String host, String code) { GoogleTv.finishPairing(MainActivity.this, host, code); }
         @JavascriptInterface public void gtvPair(String host) { GoogleTv.startPairing(MainActivity.this, host); }
+        /** Resolve os links "onde ver" num WebView escondido (passa as proteções do TMDB como um browser). */
+        @JavascriptInterface public void resolveLinksWeb(final String tmdbLink, final String cbId) {
+            runOnUiThread(() -> {
+                final WebView w = new WebView(MainActivity.this);
+                w.getSettings().setJavaScriptEnabled(true);
+                w.getSettings().setDomStorageEnabled(true);
+                w.getSettings().setUserAgentString(w.getSettings().getUserAgentString().replace("; wv)", ")"));
+                final boolean[] done = {false};
+                final Runnable finish = () -> { if (!done[0]) { done[0] = true; runJs("window.__luminLinks && window.__luminLinks(" + org.json.JSONObject.quote(cbId) + ",[])"); w.destroy(); } };
+                w.setWebViewClient(new WebViewClient() {
+                    @Override public void onPageFinished(WebView v, String u) {
+                        if (done[0] || !u.contains("themoviedb.org")) return;
+                        v.evaluateJavascript("(function(){var out=[],seen={};document.querySelectorAll('a[href*=\"click.justwatch.com\"]').forEach(function(a){try{var q=new URL(a.href).searchParams;var cx=q.get('cx').replace(/-/g,'+').replace(/_/g,'/');while(cx.length%4)cx+='=';var d=JSON.parse(atob(cx)).data[0].data;var k=d.provider+'|'+d.monetizationType;if(seen[k])return;seen[k]=1;out.push({provider:d.provider,type:d.monetizationType,url:a.href,target:q.get('r')})}catch(e){}});return JSON.stringify(out)})()", r -> {
+                            if (done[0]) return; done[0] = true;
+                            String json = "[]";
+                            try { json = new org.json.JSONTokener(r).nextValue().toString(); } catch (Exception ignored) {}
+                            Diag.log("Links (WebView): " + json.length() + " bytes");
+                            runJs("window.__luminLinks && window.__luminLinks(" + org.json.JSONObject.quote(cbId) + "," + json + ")");
+                            w.destroy();
+                        });
+                    }
+                });
+                w.loadUrl(tmdbLink);
+                w.postDelayed(finish, 15000);
+            });
+        }
         @JavascriptInterface public String diag() { return Diag.dump(); }
         @JavascriptInterface public void diagLog(String s) { Diag.log("App: " + s); }
         @JavascriptInterface public String bridgeInfo() { return LocalBridge.info(MainActivity.this); }
