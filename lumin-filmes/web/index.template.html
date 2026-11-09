@@ -816,11 +816,30 @@ const N = () => window.LuminNative || null;
 const TV = { connected: st.get("lf_tv2", null), devices: [], stvs: [], serverOn:false, bridge:{} };
 const KIND_IC = { lumin:"📺", web:"🌐", samsung:"🟦", lg:"🔴", roku:"🟪", gtv:"🟢", cloud:"🔗" };
 const KIND_TX = { lumin:"LUMIN na TV", web:"LUMIN no browser da TV", samsung:"Samsung Smart TV", lg:"LG webOS", roku:"Roku", gtv:"Google TV / Android TV", cloud:"LUMIN Link (luminai.pt/tv)" };
-const castOK = () => { try{ return !!(N() && N().castAvailable && N().castAvailable()); }catch{ return false; } };
+let webCastReady = false;
+const castOK = () => { try{ return !!(N() && N().castAvailable && N().castAvailable()) || webCastReady; }catch{ return webCastReady; } };
+/* Cast Web SDK (só na versão web, no Chrome): para os filmes "Toca já" / Arquivo */
+if (!window.LuminNative && /Chrome\//.test(navigator.userAgent) && !/[?&]tv=1/.test(location.search)){
+  window.__onGCastApiAvailable = ok => { if(!ok) return; try{
+    cast.framework.CastContext.getInstance().setOptions({ receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID, autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED });
+    webCastReady = true; }catch(e){} };
+  const sc=document.createElement("script"); sc.src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"; document.head.appendChild(sc);
+}
+function castMedia(m){
+  if (N() && N().castMedia) return N().castMedia(m.src, m.title||"", m.poster||"");
+  if (!webCastReady){ toast("Chromecast disponível no Chrome ou na app LUMIN"); return; }
+  const ctx = cast.framework.CastContext.getInstance();
+  const go = () => { const s=ctx.getCurrentSession(); if(!s) return;
+    const mi = new chrome.cast.media.MediaInfo(m.src, "video/mp4"); mi.metadata = new chrome.cast.media.MovieMediaMetadata(); mi.metadata.title = m.title||"LUMIN Filmes";
+    if (m.poster) mi.metadata.images=[new chrome.cast.Image(m.poster)];
+    const rq = new chrome.cast.media.LoadRequest(mi); rq.autoplay = true;
+    s.loadMedia(rq).then(()=>toast("📡 A tocar na TV: "+(m.title||"")), e=>toast("Chromecast: não foi possível tocar")); };
+  if (ctx.getCurrentSession()) go(); else ctx.requestSession().then(go, ()=>{});
+}
 const canSendTitle = () => TV.connected && ["lumin","web","gtv","cloud"].includes(TV.connected.kind);
 function castBtns(m){
   const j = esc(JSON.stringify(m));
-  return (castOK()?`<button class="b" data-cast='${j}'>📡 Chromecast</button>`:"") + (canSendTitle()?`<button class="b" data-tvplay='${j}'>📺 Ver na TV</button>`:"");
+  return (castOK()?`<button class="b g" data-cast='${j}'>📡 Enviar para a TV (Chromecast)</button>`:"") + (canSendTitle()?`<button class="b" data-tvplay='${j}'>📺 Ver na TV</button>`:"");
 }
 function updTvBtn(){ $("#tvBtn").classList.toggle("live", !!TV.connected || TV.serverOn || !!TV.bridge.running); }
 let tvCb = null;
@@ -1137,7 +1156,7 @@ document.addEventListener("click",e=>{
   if (d.freetoggle!==undefined){ closeCats(); return $("#freeT").click(); }
   if (d.mood!==undefined){ closeCats(); const m=MOODS[+d.mood]; if(!m[1]) return surprise(); return renderAll([m[0],m[1],m[2]]); }
   else if (d.nav) return nav(d.nav);
-  else if (d.cast){ const m=JSON.parse(d.cast); N().castMedia(m.src,m.title,m.poster||""); return; }
+  else if (d.cast){ castMedia(JSON.parse(d.cast)); return; }
   else if (d.tvplay){ const m=JSON.parse(d.tvplay); return tvDo({t:"play",...m},"📺 A abrir na TV"); }
   else if (d.tvopen) return tvDo({t:"open",key:d.tvopen},"📺 Aberto na TV");
   else if (d.k){ const k=d.k; const c=TV.connected;
@@ -1156,7 +1175,7 @@ document.addEventListener("click",e=>{
   else if (d.bridge){ if(d.bridge==="start") N().bridgeStart(); else N().bridgeStop(); setTimeout(renderRemote,500); return; }
   else if (d.lgopen!==undefined){ N().stvOpenUrl("lg", TV.connected.host, TV.bridge.url); toast("🚀 A abrir a LUMIN na LG…"); return; }
   else if (d.tvserver!==undefined){ const info=JSON.parse(N().tvServerInfo()||"{}"); if(info.running) N().tvServerStop(); else N().tvServerStart(); setTimeout(renderRemote,400); return; }
-  else if (d.castpick!==undefined){ N().castConnect(); return; }
+  else if (d.castpick!==undefined){ if (N()) N().castConnect(); else if (webCastReady) cast.framework.CastContext.getInstance().requestSession().catch(()=>{}); return; }
   else if (d.rclose!==undefined) return closeRemote();
   if (d.open) openItem(d.open);
   else if (d.iaplay) iaPlay(d.iaplay, d.iafile, !!d.restart);
@@ -1259,7 +1278,7 @@ const _setTab = setTab; setTab = function(){ _setTab(); const bn = ["search","me
 (function(){ const top=$("#player .top"); top.insertAdjacentHTML("beforeend",`<button id="pCast" title="Transmitir">📡</button>`);
   $("#pCast").onclick=()=>{ if(!cur) return; const m={src:cur.src,title:cur.title};
     if (canSendTitle()){ tvDo({t:"play",...m},"📺 A tocar na TV"); vid.pause(); }
-    else if (castOK()){ N().castMedia(m.src,m.title,""); vid.pause(); }
+    else if (castOK()){ castMedia(m); vid.pause(); }
     else openRemote(); };
 })();
 updTvBtn();

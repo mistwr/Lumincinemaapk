@@ -79,9 +79,16 @@ public class WatchActivity extends Activity {
         t.setPadding(dp(12), 0, dp(8), 0);
         bar.addView(t, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
+        // Transmitir o ecrã para a TV (Chromecast / Smart View / Miracast): o leitor do serviço continua a ser o deles
+        Button castScr = pill("📡 TV", false);
+        castScr.setOnClickListener(v -> mirror());
+        bar.addView(castScr);
+
         Button reload = pill("↻", false);
         reload.setOnClickListener(v -> web.reload());
-        bar.addView(reload);
+        LinearLayout.LayoutParams rlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        rlp.leftMargin = dp(6);
+        bar.addView(reload, rlp);
 
         col.addView(bar, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
@@ -253,6 +260,15 @@ public class WatchActivity extends Activity {
             } catch (Exception ignored) {}
         }
         return true;
+    }
+
+    /** Abre o espelhamento de ecrã do sistema (Transmitir / Smart View). */
+    private void mirror() {
+        String[] actions = {"android.settings.CAST_SETTINGS", "android.settings.WIFI_DISPLAY_SETTINGS"};
+        for (String a : actions) {
+            try { startActivity(new Intent(a)); Diag.log("Ver: espelhar ecrã via " + a); return; } catch (Exception ignored) {}
+        }
+        android.widget.Toast.makeText(this, "Abre o painel rápido do telemóvel e toca em \"Smart View\" ou \"Transmitir\"", android.widget.Toast.LENGTH_LONG).show();
     }
 
     private void exitFull() {
