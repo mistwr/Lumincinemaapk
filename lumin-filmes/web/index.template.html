@@ -1050,7 +1050,7 @@ function startTvLink(){
 function showLinkBadge(code){
   var c=$("#tvcode"); var url=SITE_TV+"?remote="+code;
   c.innerHTML = '<div style="display:flex;gap:14px;align-items:center"><div id="lkqr" style="background:#fff;border-radius:10px;padding:6px"></div>'
-    + '<div><div style="font-size:12px;color:#ccc">📱 Comanda com o telemóvel</div><div style="font-size:12px;color:#aaa;margin-top:4px">Lê o QR ou abre <b style="color:#fff">luminai.pt/tv</b></div>'
+    + '<div><div style="font-size:12px;color:#ccc">📱 Comanda com o telemóvel</div><div style="font-size:12px;color:#aaa;margin-top:4px">Lê o QR ou abre <strong style="color:#fff">luminai.pt/tv</strong></div>'
     + '<b style="font-size:26px;letter-spacing:.25em;color:var(--gold2)">'+code+'</b></div></div>';
   c.style.display="block"; drawQR($("#lkqr"), url);
   var q=$("#lkqr svg"); if(q){ q.setAttribute("width","92"); q.setAttribute("height","92"); }
