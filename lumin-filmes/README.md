@@ -14,7 +14,7 @@ Usa sempre a mesma keystore. Com outra chave, as atualizações não instalam po
 ## Adicionar filmes
 Edita `catalog.json` (filmes que tocam no player). A interface está em `web/index.template.html`.
 
-## Token TMDB
+## Token TMDB (opcional, já não é usado no ecrã principal)
 Põe `tmdb.token=eyJ...` em `local.properties` (ou a variável `TMDB_TOKEN`). O build injeta-o na APK, e o token nunca vai para o git.
 Atenção: a chave atual é de uso pessoal/não comercial. Antes de distribuir publicamente, pede aprovação ao TMDB (API for Business).
 

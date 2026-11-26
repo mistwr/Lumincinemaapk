@@ -14,7 +14,7 @@ tasks.register('generateLuminAssets') {
     inputs.property('token', tmdbToken)
     outputs.dir(genAssets)
     doLast {
-        if (!tmdbToken) throw new GradleException('Falta o token TMDB: define TMDB_TOKEN ou tmdb.token em local.properties')
+        // o token TMDB já não é obrigatório: a app só mostra conteúdo que toca lá dentro
         def html = rootProject.file('web/index.template.html').getText('UTF-8')
         def cat = rootProject.file('catalog.json').getText('UTF-8').replaceAll(/\s*\n\s*/, '')
         def yt = rootProject.file('youtube.json').getText('UTF-8').trim()
