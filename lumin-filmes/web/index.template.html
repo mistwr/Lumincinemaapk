@@ -151,6 +151,15 @@ header.solid{background:var(--glass);backdrop-filter:blur(18px) saturate(1.4);-w
 #player.idle .top{opacity:0}
 .spin{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px;border:3px solid #ffffff33;border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;display:none}
 #player.load .spin{display:block}
+/* destaque no início */
+.feat{position:relative;margin:6px 14px 18px;border-radius:18px;overflow:hidden;aspect-ratio:16/9;max-height:62vh;background:#111 center/cover;box-shadow:0 20px 50px #000a;width:calc(100% - 28px);display:block;text-align:left;outline:0}
+.feat:focus{box-shadow:0 0 0 3px var(--gold2)}
+.feat::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#000e 0%,#0000 60%)}
+.feat .fi{position:absolute;left:16px;right:16px;bottom:14px;z-index:2}
+.feat small{color:var(--gold2);font-weight:900;font-size:11px;letter-spacing:.12em}
+.feat h1{font-size:clamp(20px,5vw,40px);line-height:1.1;margin:4px 0 6px;text-shadow:0 2px 10px #000}
+.feat span{font-size:12.5px;color:#ddd}
+@media(min-width:900px){.feat{margin:6px 48px 22px;width:calc(100% - 96px)}.feat .fi{left:40px;bottom:36px}}
 /* player YouTube (Grátis na LUMIN) */
 #ytp{position:fixed;inset:0;z-index:61;background:#000;display:none}
 #ytp.on{display:block}
@@ -323,11 +332,10 @@ nav.bn button.srch.on span{background:var(--gold);color:#000}
   <div class="tabs" id="tabs">
     <button class="tab tvonly on" data-tab="home">Início</button>
     <button class="tab tvonly" data-tab="search">⌕ Pesquisar</button>
-    <button class="tab" data-tab="tv">Séries</button>
-    <button class="tab" data-tab="movie">Filmes</button>
-    <button class="tab" data-tab="gratis">▶ Grátis na LUMIN</button>
-    <button class="tab" data-tab="nologin">⚡ Sem login</button>
-    <button class="tab tvonly" data-tab="natal">🎄 Natal</button>
+    <button class="tab" data-tab="movie">🎬 Filmes</button>
+    <button class="tab" data-tab="tv">📺 Séries</button>
+    <button class="tab" data-tab="kids">🧸 Miúdos</button>
+    <button class="tab" data-tab="docs">🌍 Documentários</button>
     <button class="tab tvonly" data-tab="arquivo">📼 Arquivo livre</button>
     <button class="tab tvonly" data-tab="me">♡ A minha LUMIN</button>
     <button class="tab" data-cats>Categorias ▾</button>
@@ -339,12 +347,8 @@ nav.bn button.srch.on span{background:var(--gold);color:#000}
 <section class="hero" id="hero" style="display:none"></section>
 <main id="main"></main>
 
-<footer>
-  <img alt="TMDB" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 190 24'><defs><linearGradient id='g'><stop offset='0' stop-color='%2390cea1'/><stop offset='.56' stop-color='%233cbec9'/><stop offset='1' stop-color='%2300b3e5'/></linearGradient></defs><text x='0' y='19' font-family='Arial' font-weight='900' font-size='21' fill='url(%23g)'>TMDB</text></svg>">
-  <div>Este produto usa a API do TMDB mas não é aprovado nem certificado pelo TMDB. Dados de onde ver: JustWatch.
-  A LUMIN Filmes não aloja nem transmite filmes de terceiros. Mostra onde cada título está disponível legalmente e abre o serviço oficial.
-  Os filmes da secção "Tocar já" são de domínio público ou Creative Commons e passam a partir do Internet Archive.</div>
-</footer>
+<footer><div>Tudo na LUMIN Filmes toca dentro da app, sem login. Os filmes, séries e documentários vêm dos canais oficiais dos próprios estúdios no YouTube (player oficial, com os anúncios deles),
+  do Internet Archive (domínio público e Creative Commons) e de filmes livres da Blender Foundation. A LUMIN não aloja vídeos de terceiros.</div></footer>
 
 <div class="sheet" id="sheet"><div class="sh" id="sh"></div></div>
 <div id="player"><video id="vid" controls playsinline preload="metadata"></video><div class="spin"></div>
@@ -478,6 +482,25 @@ function luminItems(){
     pct: prog[f.id]&&prog[f.id].t>0 ? Math.min(100,prog[f.id].t/f.dur*100) : 0}));
 }
 
+const PTABS = { movie:[["filmes"],"🎬 Filmes"], tv:[["series"],"📺 Séries"], kids:[["desenhos","familia"],"🧸 Miúdos"], docs:[["docs"],"🌍 Documentários"] };
+const rowHTML = (title, items, more) => items.length ? `<div class="row"><div class="rh"><h2>${title}</h2>${more?`<button data-more="${more}">Ver todos ›</button>`:""}</div><div class="rail">${items.map(card).join("")}</div></div>` : "";
+const luminCont = () => luminItems().filter(it=>{const p=prog[it.id];const f=LUMIN_FILMS.find(x=>x.id===it.id);return p&&p.t>20&&p.t<f.dur-30});
+function featHTML(){
+  const l = ytList(ytCat("filmes")).slice(0,60); if (!l.length) return "";
+  const it = l[Math.floor(Math.random()*l.length)];
+  return `<button class="feat" data-open="yt:${it.id}" style="background-image:url('${ytThumb(it.id,"maxresdefault")}'),url('${it.poster}')"><div class="fi"><small>▶ TOCA JÁ NA LUMIN</small><h1>${esc(it.title)}</h1><span>${fmtDur(it.dur)} · ${esc(it.ch)}</span></div></button>`;
+}
+function renderCatTab(t){
+  const [cats, title] = PTABS[t]; const f = (x,ch)=>cats.includes(ch.cat);
+  let h = `<div class="ptitle">${title}</div>`;
+  h += rowHTML("🔥 Mais vistos", ytList(f).slice(0,24), `yt:cat:${cats[0]}`);
+  if (t==="kids") h += rowHTML("🇵🇹 Em português", ytMix(ytList((x,ch)=>f(x,ch)&&ch.lang==="pt"),30), "");
+  h += rowHTML("✨ Mistura", ytMix(ytList(f).sort(()=>Math.random()-.5),24), "");
+  YT.channels.forEach((ch,i)=>{ if (!cats.includes(ch.cat)) return; const l=ytList(x=>x[3]===i); if(l.length) h += rowHTML(`${esc(ch.n)} <small style="color:var(--mut);font-weight:600">· ${l.length}</small>`, l.slice(0,20), `yt:ch:${i}`); });
+  if (t==="movie") h += railHTML("lumin","▶ Filmes livres (Blender e clássicos)",true,"lumin");
+  $("#main").innerHTML = h;
+  if ($("#r-lumin")) $("#r-lumin").innerHTML = luminItems().map(card).join("");
+}
 async function render(){
   const main = $("#main"); window.scrollTo(0,0);
   const q = $("#q").value.trim();
@@ -485,7 +508,7 @@ async function render(){
   hideHero();
   if (q) return renderSearch(q);
   if (tab==="lumin"){
-    main.innerHTML = `<div class="ptitle">▶ Toca já na LUMIN</div><div class="grid">${luminItems().map(card).join("")}</div>
+    main.innerHTML = `<div class="ptitle">▶ Filmes livres</div><div class="grid">${luminItems().map(card).join("")}</div>
       <p class="empty">Filmes de domínio público e Creative Commons que tocam diretamente no player LUMIN.</p>`;
     return;
   }
@@ -493,48 +516,27 @@ async function render(){
   if (tab==="gratis") return renderYtTab();
   if (tab==="search") return renderSearchHome();
   if (tab==="me") return renderMe();
+  if (PTABS[tab]) return renderCatTab(tab);
   if (tab==="list"){
-    main.innerHTML = `<div class="ptitle">♥ A minha lista</div>` + (myList.length
-      ? `<div class="grid">${myList.map(card).join("")}</div>`
-      : `<p class="empty">Ainda não guardaste nada. Abre um filme ou série e carrega em ♥.</p>`);
+    const l = myList.filter(x=>["yt","lumin","ia"].includes(x.type));
+    main.innerHTML = `<div class="ptitle">♥ A minha lista</div>` + (l.length ? `<div class="grid">${l.map(card).join("")}</div>` : `<p class="empty">Ainda não guardaste nada.</p>`);
     return;
   }
-  const secs = SECTIONS[tab];
-  let html = "";
-  if (tab==="home"){
-    if (BIG()) html += `<div class="moods" id="moods">${MOODS.map((m,i)=>`<button class="mood ${m[3]?"sp":""}" data-mood="${i}">${m[0]}</button>`).join("")}</div>`;
-    const cont = LUMIN_FILMS.filter(f=>prog[f.id]&&prog[f.id].t>20&&prog[f.id].t<f.dur-30);
-    if (cont.length || ytCont().length) html += railHTML("cont","▶ Continuar a ver",false);
-    html += `<div class="row"><div class="rh"><h2>🔥 Top 10 grátis hoje em Portugal</h2></div><div class="rail top" id="r-top">${skel(6)}</div></div>`;
-    if (YT.items.length){
-      html += `<div class="row"><div class="rh"><h2>🎬 Filmes completos grátis na LUMIN</h2><button data-more="yt:cat:filmes">Ver todos ›</button></div><div class="rail">${ytMix(ytList(ytCat("filmes")),20).map(card).join("")}</div></div>`;
-      html += `<div class="row"><div class="rh"><h2>🧸 Desenhos animados</h2><button data-more="yt:cat:desenhos">Ver todos ›</button></div><div class="rail">${ytMix(ytList(ytCat("desenhos"),"pt"),20).map(card).join("")}</div></div>`;
-      html += `<div class="row"><div class="rh"><h2>🌍 Documentários</h2><button data-more="yt:cat:docs">Ver todos ›</button></div><div class="rail">${ytMix(ytList(ytCat("docs")),20).map(card).join("")}</div></div>`;
-    }
-    html += railHTML("lumin","▶ Toca já na LUMIN",true,"lumin");
-  }
-  secs.forEach((s,i)=> html += railHTML("s"+i, s[0], true, `${tab}:${i}`));
-  main.innerHTML = html;
-  if (tab==="home"){
-    discover("movie",{}).then(d=>{ const el=$("#r-top"); if(!el) return;
-      el.innerHTML = d.results.filter(x=>x.poster_path).slice(0,10).map((x,i)=>{ const it=norm(x,"movie");
-        return `<button class="tc" data-open="movie:${it.id}"><span class="n">${i+1}</span><div class="card" tabindex="-1"><div class="im" style="background-image:url('${it.poster}')"></div></div></button>`; }).join("");
-    }).catch(()=>{});
-    const cont = luminItems().filter(it=>{const p=prog[it.id];const f=LUMIN_FILMS.find(x=>x.id===it.id);return p&&p.t>20&&p.t<f.dur-30});
-    if ($("#r-cont")) $("#r-cont").innerHTML = [...ytCont(), ...cont].map(card).join("");
-    $("#r-lumin").innerHTML = luminItems().map(card).join("");
-  }
-  secs.forEach(async (s,i)=>{
-    const el = $("#r-s"+i); if(!el) return;
-    try{
-      const d = await discover(s[1], s[2]);
-      const nl = String(s[2].with_watch_providers||"")===NOLOGIN_IDS;
-      const items = d.results.filter(x=>x.poster_path).map(x=>({...norm(x,s[1]),nologin:nl}));
-      if (!items.length){ el.closest(".row").remove(); return; }
-      el.innerHTML = items.map(card).join("");
-      if (i===0 && ["home","natal","movie","tv","nologin"].includes(tab)) heroFrom(items);
-    }catch(e){ el.innerHTML = `<div class="empty">Sem ligação. Tenta outra vez.</div>`; }
-  });
+  tab = "home";
+  let h = featHTML();
+  h += rowHTML("▶ Continuar a ver", [...ytCont(), ...luminCont()], "");
+  h += rowHTML("🎬 Filmes completos", ytMix(ytList(ytCat("filmes")),24), "yt:cat:filmes");
+  h += rowHTML("🧸 Desenhos em português", ytMix(ytList((x,ch)=>ch.cat==="desenhos"&&ch.lang==="pt"),24), "yt:cat:desenhos");
+  h += rowHTML("📺 Séries e episódios", ytMix(ytList(ytCat("series")),24), "yt:cat:series");
+  h += rowHTML("🌍 Documentários", ytMix(ytList(ytCat("docs")),24), "yt:cat:docs");
+  h += rowHTML("🎞️ Clássicos do cinema soviético", ytList((x,ch)=>ch.n==="Mosfilm"||ch.n==="Estúdio Gorky").slice(0,24), "");
+  h += rowHTML("🐻 Desenhos do mundo", ytMix(ytList((x,ch)=>ch.cat==="desenhos"&&ch.lang!=="pt"),24), "yt:cat:desenhos");
+  h += railHTML("lumin","▶ Filmes livres (Blender e clássicos)",true,"lumin");
+  h += `<div id="iahome"></div>`;
+  main.innerHTML = h;
+  $("#r-lumin").innerHTML = luminItems().map(card).join("");
+  try{ const r=await iaSearch(IA_SECTIONS[1][1]); const items=r.docs.filter(d=>iaOk(d,IA_SECTIONS[1][2])&&iaVisible(d)).map(iaItem);
+    const el=$("#iahome"); if (el && items.length) el.outerHTML = rowHTML("📼 Cinema independente livre", items, "ia:1"); }catch{}
 }
 function railHTML(id,title,more,key){
   return `<div class="row"><div class="rh"><h2>${esc(title)}</h2>${more&&key?`<button data-more="${key}">Ver todos ›</button>`:""}</div>
@@ -598,12 +600,7 @@ const MOODS = [
   ["🧸 Miúdos","tv",{with_genres:"10762","vote_count.gte":3}],["🇵🇹 Português","movie",{with_origin_country:"PT","vote_count.gte":3}],
 ];
 async function surprise(){
-  toast("🎲 A escolher algo para ti…");
-  try{ const type = Math.random()<.75?"movie":"tv";
-    const d1 = await discover(type,{"vote_average.gte":6.3,"vote_count.gte":150}); const pg = 1+Math.floor(Math.random()*Math.min(d1.total_pages,15));
-    const d = await discover(type,{"vote_average.gte":6.3,"vote_count.gte":150},pg); const pick = d.results[Math.floor(Math.random()*d.results.length)];
-    if (pick) openItem(`${type}:${pick.id}`);
-  }catch{ toast("Sem ligação"); }
+  const l = ytList(()=>true, "none"); if (!l.length) return; openYt(l[Math.floor(Math.random()*l.length)].id);
 }
 
 /* "Ver todos": grelha com paginação (milhares de títulos) */
@@ -613,7 +610,8 @@ async function renderAll(key){
   if (key==="lumin"){ tab="lumin"; setTab(); return render(); }
   if (typeof key==="string" && key.startsWith("ia:")) return renderArchiveAll(+key.slice(3));
   if (typeof key==="string" && key.startsWith("yt:")){ const [,k,v]=key.split(":"); return renderYtAll(k,v); }
-  if (Array.isArray(key)) [title,type,extra]=key; else { const [t,i] = key.split(":"); [title,type,extra] = SECTIONS[t][+i]; }
+  if (Array.isArray(key) || !SECTIONS[String(key).split(":")[0]]){ tab="home"; setTab(); return render(); }
+  { const [t,i] = key.split(":"); [title,type,extra] = SECTIONS[t][+i]; }
   main.innerHTML = `<div class="ptitle">${esc(title)}</div><div class="grid" id="g"></div><button class="b more" id="moreB">Carregar mais</button>`;
   async function load(){
     $("#moreB").textContent="A carregar…";
@@ -631,19 +629,13 @@ async function renderAll(key){
 
 async function renderSearch(q){
   const main=$("#main");
-  main.innerHTML = `<div class="ptitle">Resultados para “${esc(q)}”</div><div class="grid" id="g">${skel(6)}</div>`;
   const local = luminItems().filter(f=>f.title.toLowerCase().includes(q.toLowerCase()));
-  try{
-    const d = await api("search/multi",{query:q,include_adult:false});
-    if ($("#q").value.trim()!==q) return;
-    const items = d.results.filter(x=>(x.media_type==="movie"||x.media_type==="tv")&&x.poster_path).map(x=>norm(x));
-    const ia = await iaSearchText(q);
-    if ($("#q").value.trim()!==q) return;
-    const all = [...local,...ytSearch(q).slice(0,24),...ia.slice(0,12),...items];
-    $("#g").innerHTML = all.length ? all.map(it=>card(it).replace('<span class="fr">GRÁTIS</span>','')).join("") : "";
-    if (!all.length) main.insertAdjacentHTML("beforeend",`<p class="empty">Nada encontrado.</p>`);
-    else main.insertAdjacentHTML("beforeend",`<p class="empty">Abre um título para ver se está grátis em Portugal.</p>`);
-  }catch{ $("#g").innerHTML = [...local,...ytSearch(q)].map(card).join("") || `<p class="empty">Sem ligação.</p>`; }
+  const yt = ytSearch(q);
+  main.innerHTML = `<div class="ptitle">Resultados para “${esc(q)}”</div><div class="grid w" id="g">${[...local,...yt].map(card).join("")}</div><div id="iar"></div>`;
+  const ia = await iaSearchText(q);
+  if ($("#q").value.trim()!==q) return;
+  if (ia.length) $("#iar").innerHTML = rowHTML("📼 No Arquivo livre", ia.slice(0,20), "");
+  if (!local.length && !yt.length && !ia.length) main.insertAdjacentHTML("beforeend",`<p class="empty">Nada encontrado. Experimenta outro nome, um canal ou "desenhos".</p>`);
 }
 
 /* ================= detalhe ================= */
@@ -987,12 +979,31 @@ async function ytPlay(id, restart){
   ytP = new window.YT.Player("ytframe", { videoId:id, playerVars:pv, width:"100%", height:"100%",
     events:{
       onReady: e=>{ o.classList.remove("load"); try{ e.target.playVideo(); }catch{} },
-      onStateChange: e=>{ if (e.data===1){ o.classList.remove("load"); ytTick(); } if (e.data===0) ytEnded(); },
+      onStateChange: e=>{ if (e.data===1){ o.classList.remove("load"); ytTick(); ytSubsPT(); } if (e.data===0) ytEnded(); },
       onError: e=>{ o.classList.remove("load"); const id2=ytCur&&ytCur.id; if (!id2) return;
         if (e.data===101||e.data===150||e.data===100){ ytHidden.add(id2); st.set("lf_yt_hidden",[...ytHidden]); toast("Este vídeo deixou de estar disponível fora do YouTube. Escondido."); }
         else toast("Não foi possível tocar este vídeo.");
         closeYt(); }
     }});
+}
+/* legendas em português: usa a faixa PT se existir; senão pede ao YouTube a tradução automática para PT */
+let ytSubsFor = null;
+function ytSubsPT(){
+  if (!ytP || !ytCur || ytSubsFor===ytCur.id || st.get("lf_subs", true)===false) return;
+  const x = YT_BY_ID.get(ytCur.id); if (x && (YT.channels[x[3]]||{}).lang==="pt") return;
+  ytSubsFor = ytCur.id;
+  try{ ytP.loadModule("captions"); }catch{}
+  let tries = 0;
+  (function go(){
+    try{
+      const list = ytP.getOption("captions","tracklist") || [];
+      if (!list.length){ if (++tries<8) return setTimeout(go,700); return; }
+      const pt = list.find(t=>/^pt/i.test(t.languageCode));
+      if (pt) ytP.setOption("captions","track",{languageCode:pt.languageCode});
+      else { const src = list.find(t=>!t.kind) || list[0];
+        ytP.setOption("captions","track",{languageCode:src.languageCode, translationLanguage:{languageCode:"pt", languageName:"Português"}}); }
+    }catch{ if (++tries<8) setTimeout(go,700); }
+  })();
 }
 function ytSave(){ if (!ytP||!ytCur||!ytP.getCurrentTime) return; const t=ytP.getCurrentTime(); if (t>5){ prog["yt:"+ytCur.id]={t:Math.floor(t),at:Date.now()}; st.set("lumin_filmes_prog",prog); } }
 function ytTick(){ clearInterval(ytSaveT); ytSaveT=setInterval(()=>{ ytSave(); ytReport(); },5000); }
@@ -1480,7 +1491,7 @@ document.addEventListener("click",e=>{
   if (d.cats!==undefined) return openCats();
   if (d.catsclose!==undefined) return closeCats();
   if (d.freetoggle!==undefined){ closeCats(); return $("#freeT").click(); }
-  if (d.mood!==undefined){ closeCats(); const m=MOODS[+d.mood]; if(!m[1]) return surprise(); return renderAll([m[0],m[1],m[2]]); }
+  if (d.mood!==undefined){ closeCats(); return surprise(); }
   else if (d.nav) return nav(d.nav);
   else if (d.cast){ castMedia(JSON.parse(d.cast)); return; }
   else if (d.tvplay){ const m=JSON.parse(d.tvplay); return tvDo({t:"play",...m},"📺 A abrir na TV"); }
@@ -1506,7 +1517,7 @@ document.addEventListener("click",e=>{
   if (d.open) openItem(d.open);
   else if (d.iaplay) iaPlay(d.iaplay, d.iafile, !!d.restart);
   else if (d.iahide){ iaHidden.add(d.iahide); st.set("lf_ia_hidden",[...iaHidden]); closeSheet(); toast("Escondido. Não volta a aparecer."); if(tab==="arquivo") render(); }
-  else if (d.more) renderAll(d.more);
+  else if (d.more){ closeCats(); closeSheet(); renderAll(d.more); }
   else if (d.play) play(d.play);
   else if (d.restart) play(d.restart,true);
   else if (d.close!==undefined) closeSheet();
@@ -1557,15 +1568,13 @@ window.luminBack=()=>{
 /* página de pesquisa: categorias para explorar */
 const TILE_C = [["#7c2d12","#1c0a05"],["#1e3a8a","#0a1022"],["#065f46","#03140f"],["#6b21a8","#160622"],["#9f1239","#22050c"],["#854d0e","#1d1203"],["#0e7490","#04161b"],["#374151","#0b0d10"]];
 function exploreTiles(){
-  const t = [["▶ Grátis na LUMIN","nav:gratis","🎬"],["⚡ Sem login","nav:nologin","⚡"],["🎄 Natal","nav:natal","🎄"],["📼 Arquivo livre","nav:arquivo","📼"],["▶ Toca já","nav:lumin","🎬"],
-    ...MOODS.map((m,i)=>[m[0].replace(/^\S+\s/,""),"mood:"+i,m[0].split(" ")[0]]).filter((x,i)=>i>0 && !/Natal/.test(x[0]))];
+  const t = [["Filmes","nav:movie","🎬"],["Séries","nav:tv","📺"],["Miúdos","nav:kids","🧸"],["Documentários","nav:docs","🌍"],["Arquivo livre","nav:arquivo","📼"],["Filmes livres","nav:lumin","▶"],["Surpreende-me","mood:0","🎲"],["A minha LUMIN","nav:me","♡"]];
   return `<div class="tiles">${t.map((x,i)=>{const c=TILE_C[i%TILE_C.length];const [k,v]=x[1].split(":");
     return `<button class="tile" style="--c1:${c[0]};--c2:${c[1]}" ${k==="nav"?`data-nav="${v}"`:`data-mood="${v}"`}>${esc(x[0])}<span>${x[2]}</span></button>`}).join("")}</div>`;
 }
 function renderSearchHome(){
-  $("#main").innerHTML = `<div class="ptitle">Explorar</div>${exploreTiles()}<div style="height:18px"></div>`+railHTML("sp","⚡ Populares sem login",false);
+  $("#main").innerHTML = `<div class="ptitle">Explorar</div>${exploreTiles()}<div style="height:18px"></div>` + rowHTML("🔥 Mais vistos na LUMIN", ytList(()=>true).slice(0,30), "");
   setTimeout(()=>{ if(!BIG()) $("#q").focus(); },50);
-  discover("movie",{with_watch_providers:NOLOGIN_IDS,with_watch_monetization_types:FREE,"vote_count.gte":50}).then(d=>{ const el=$("#r-sp"); if(el) el.innerHTML=d.results.filter(x=>x.poster_path).map(x=>card({...norm(x,"movie"),nologin:true})).join(""); }).catch(()=>{});
 }
 function renderMe(){
   const cont = [...ytCont(), ...luminItems().filter(it=>{const p=prog[it.id];const f=LUMIN_FILMS.find(x=>x.id===it.id);return p&&p.t>20&&p.t<f.dur-30})];
@@ -1577,15 +1586,14 @@ function renderMe(){
       <button class="tile" style="--c1:#374151;--c2:#0b0d10" data-cats>Categorias<span>☰</span></button>
     </div><div style="height:20px"></div>`
     + (cont.length?`<div class="row"><div class="rh"><h2>▶ Continuar a ver</h2></div><div class="rail">${cont.map(card).join("")}</div></div>`:"")
-    + `<div class="row"><div class="rh"><h2>♡ A minha lista</h2></div>${myList.length?`<div class="grid">${myList.map(card).join("")}</div>`:`<p class="empty">Carrega em "＋ Lista" num filme ou série para o guardares aqui.</p>`}</div>`;
+    + `<div class="row"><div class="rh"><h2>♡ A minha lista</h2></div>${myList.filter(x=>["yt","lumin","ia"].includes(x.type)).length?`<div class="grid w">${myList.filter(x=>["yt","lumin","ia"].includes(x.type)).map(card).join("")}</div>`:`<p class="empty">Carrega em "＋ Lista" num filme ou série para o guardares aqui.</p>`}</div>`;
 }
 /* categorias (folha ao estilo Netflix) */
 function openCats(){
   const c=$("#cats"); c.classList.add("on");
-  c.innerHTML = `<button class="cl" data-nav="home">Início</button><button class="cl" data-nav="tv">Séries</button><button class="cl" data-nav="movie">Filmes</button>
-    <button class="cl" data-nav="gratis">▶ Grátis na LUMIN</button><button class="cl" data-nav="nologin">⚡ Sem login</button><button class="cl" data-nav="natal">🎄 Natal</button><button class="cl" data-nav="arquivo">📼 Arquivo livre</button><button class="cl" data-nav="lumin">▶ Toca já</button>
-    <h3>Géneros e ambientes</h3>${MOODS.map((m,i)=>`<button class="cl" data-mood="${i}">${m[0]}</button>`).join("")}
-    <h3>Opções</h3><button class="cl" data-freetoggle>${freeOnly?"✓ ":""}Mostrar só o que é grátis</button>
+  c.innerHTML = `<button class="cl" data-nav="home">Início</button>${Object.entries(PTABS).map(([k,v])=>`<button class="cl" data-nav="${k}">${v[1]}</button>`).join("")}
+    <button class="cl" data-nav="arquivo">📼 Arquivo livre</button><button class="cl" data-nav="lumin">▶ Filmes livres</button><button class="cl" data-mood="0">🎲 Surpreende-me</button>
+    <h3>Canais oficiais</h3>${YT.channels.map((ch,i)=>`<button class="cl" data-more="yt:ch:${i}">${esc(ch.n)}</button>`).join("")}
     <button class="x" data-catsclose>✕</button>`;
   setTimeout(()=>c.querySelector(".cl")?.focus(),50);
 }
@@ -1595,7 +1603,7 @@ function closeCats(){ $("#cats").classList.remove("on"); }
 function nav(where){
   closeCats();
   if (where==="tvremote"){ openRemote(); return; }
-  if (where===tab && ["tv","movie","nologin","natal","arquivo","lumin","gratis"].includes(where)) where="home"; // tocar no chip ativo volta ao início
+  if (where===tab && ["tv","movie","kids","docs","arquivo","lumin","gratis"].includes(where)) where="home"; // tocar no chip ativo volta ao início
   document.querySelectorAll("nav.bn button").forEach(b=>b.classList.toggle("on",b.dataset.nav===where || (where!=="home"&&where!=="search"&&where!=="me"&&b.dataset.nav==="home")));
   closeSheet(); closeRemote();
   tab = where; $("#q").value=""; setTab(); render();
