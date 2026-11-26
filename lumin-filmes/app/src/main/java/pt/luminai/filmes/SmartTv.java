@@ -315,6 +315,12 @@ final class SmartTv {
             p.put("DataOfCmd", "base64"); p.put("TypeOfRemote", "SendInputString");
             ws.send(new JSONObject().put("method", "ms.remote.control").put("params", p).toString());
         }
+        /** abre um endereço no browser da Samsung (Tizen) */
+        @Override void openUrl(String url) throws Exception {
+            JSONObject d = new JSONObject().put("appId", "org.tizen.browser").put("action_type", "NATIVE_LAUNCH").put("metaTag", url);
+            JSONObject p = new JSONObject().put("event", "ed.apps.launch").put("to", "host").put("data", d);
+            ws.send(new JSONObject().put("method", "ms.channel.emit").put("params", p).toString());
+        }
     }
 
     // ---------------- LG webOS ----------------

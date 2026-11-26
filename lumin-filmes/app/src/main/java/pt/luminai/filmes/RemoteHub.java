@@ -138,7 +138,11 @@ final class RemoteHub {
             String body = new String(buf, 0, r);
             int status = 200; String resp = "{\"ok\":true,\"name\":" + JSONObject.quote(name()) + "}";
             if (!code.equals(gotCode)) { status = 403; resp = "{\"ok\":false}"; }
-            else exec(app, new JSONObject(body.isEmpty() ? "{}" : body));
+            else {
+                JSONObject cmd = new JSONObject(body.isEmpty() ? "{}" : body);
+                if ("status".equals(cmd.optString("t"))) resp = "{\"ok\":true,\"name\":" + JSONObject.quote(name()) + ",\"np\":" + nowPlaying() + "}";
+                else exec(app, cmd);
+            }
             byte[] out = resp.getBytes(StandardCharsets.UTF_8);
             OutputStream os = s.getOutputStream();
             os.write(("HTTP/1.1 " + status + (status == 200 ? " OK" : " Forbidden") + "\r\nContent-Type: application/json\r\nContent-Length: " + out.length + "\r\nConnection: close\r\n\r\n").getBytes(StandardCharsets.UTF_8));
@@ -187,6 +191,21 @@ final class RemoteHub {
             if (a instanceof WatchActivity) a.finish();
             if (main != null) main.runJs("window.luminRemote && window.luminRemote(" + cmd.toString() + ")");
         });
+    }
+
+    /** pergunta à interface da TV o que está a tocar (título, tempo, duração, pausa) */
+    private static String nowPlaying() {
+        final String[] out = {"{\"on\":false}"};
+        final java.util.concurrent.CountDownLatch done = new java.util.concurrent.CountDownLatch(1);
+        ui.post(() -> {
+            if (main == null || main.web == null) { done.countDown(); return; }
+            main.web.evaluateJavascript("window.luminNowPlaying ? window.luminNowPlaying() : '{\"on\":false}'", v -> {
+                try { if (v != null && v.startsWith("\"")) out[0] = new JSONArray("[" + v + "]").getString(0); } catch (Exception ignored) {}
+                done.countDown();
+            });
+        });
+        try { done.await(2, java.util.concurrent.TimeUnit.SECONDS); } catch (InterruptedException ignored) {}
+        try { new JSONObject(out[0]); return out[0]; } catch (Exception e) { return "{\"on\":false}"; }
     }
 
     static void js(final String code) { ui.post(() -> { if (main != null) main.runJs(code); }); }
@@ -243,7 +262,7 @@ final class RemoteHub {
 
     static void send(final String host, final int port, final String code, final String json) {
         new Thread(() -> {
-            boolean ok = false;
+            boolean ok = false; String body = "null";
             try {
                 HttpURLConnection c = (HttpURLConnection) new URL("http://" + host + ":" + port + "/cmd").openConnection();
                 c.setConnectTimeout(3000); c.setReadTimeout(5000);
@@ -254,10 +273,15 @@ final class RemoteHub {
                 c.setFixedLengthStreamingMode(b.length);
                 c.getOutputStream().write(b);
                 ok = c.getResponseCode() == 200;
+                if (ok) {
+                    BufferedReader rd = new BufferedReader(new InputStreamReader(c.getInputStream(), StandardCharsets.UTF_8));
+                    StringBuilder sb = new StringBuilder(); String ln; while ((ln = rd.readLine()) != null) sb.append(ln);
+                    try { body = new JSONObject(sb.toString()).toString(); } catch (Exception ignored) {}
+                }
                 c.disconnect();
             } catch (Exception ignored) {}
-            Diag.log("LUMIN TV " + host + ": " + (ok ? "ok" : "sem resposta / código errado"));
-            js("window.__luminTVResult && window.__luminTVResult(" + ok + ")");
+            if (!json.contains("\"status\"")) Diag.log("LUMIN TV " + host + ": " + (ok ? "ok" : "sem resposta / código errado"));
+            js("window.__luminTVResult && window.__luminTVResult(" + ok + "," + body + ")");
         }).start();
     }
 }
