@@ -32,7 +32,7 @@ public class MainActivity extends Activity {
     /** Executa JS na interface (usado pelo comando remoto). */
     void runJs(String code) { if (web != null) web.evaluateJavascript(code, null); }
 
-    private WebView web;
+    WebView web;
     private FrameLayout root;
     private View fullView;
     private WebChromeClient.CustomViewCallback fullCallback;
@@ -132,6 +132,14 @@ public class MainActivity extends Activity {
         }
         @JavascriptInterface public void tvDiscover() { RemoteHub.discover(MainActivity.this); }
         @JavascriptInterface public void tvDiscoverStop() { RemoteHub.stopDiscover(MainActivity.this); }
+        @JavascriptInterface public void vibrate(int ms) {
+            try {
+                android.os.Vibrator v = (android.os.Vibrator) getSystemService(VIBRATOR_SERVICE);
+                if (v == null || !v.hasVibrator()) return;
+                if (android.os.Build.VERSION.SDK_INT >= 26) v.vibrate(android.os.VibrationEffect.createOneShot(Math.max(5, Math.min(ms, 400)), android.os.VibrationEffect.DEFAULT_AMPLITUDE));
+                else v.vibrate(Math.max(5, Math.min(ms, 400)));
+            } catch (Exception ignored) {}
+        }
         @JavascriptInterface public void tvSend(String host, int port, String code, String json) { RemoteHub.send(host, port, code, json); }
         @JavascriptInterface public String tvServerInfo() { return RemoteHub.info(MainActivity.this); }
         @JavascriptInterface public void tvServerStart() { RemoteHub.start(MainActivity.this); }
@@ -235,7 +243,9 @@ public class MainActivity extends Activity {
         Uri u = i.getData();
         try {
             org.json.JSONObject cmd = new org.json.JSONObject();
-            if ("play".equals(u.getHost())) { cmd.put("t", "play"); cmd.put("src", u.getQueryParameter("src")); cmd.put("title", u.getQueryParameter("title")); }
+            if ("home".equals(u.getHost())) { cmd.put("t", "home"); }
+            else if ("yt".equals(u.getHost())) { cmd.put("t", "yt"); cmd.put("id", u.getQueryParameter("id")); }
+            else if ("play".equals(u.getHost())) { cmd.put("t", "play"); cmd.put("src", u.getQueryParameter("src")); cmd.put("title", u.getQueryParameter("title")); }
             else { cmd.put("t", "open"); cmd.put("key", u.getQueryParameter("key")); }
             final String js = "setTimeout(function(){window.luminRemote&&window.luminRemote(" + cmd + ")},1500)";
             web.postDelayed(() -> runJs(js), 300);

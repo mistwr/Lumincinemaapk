@@ -17,3 +17,12 @@ Edita `catalog.json` (filmes que tocam no player). A interface está em `web/ind
 ## Token TMDB
 Põe `tmdb.token=eyJ...` em `local.properties` (ou a variável `TMDB_TOKEN`). O build injeta-o na APK, e o token nunca vai para o git.
 Atenção: a chave atual é de uso pessoal/não comercial. Antes de distribuir publicamente, pede aprovação ao TMDB (API for Business).
+
+## Grátis na LUMIN (canais oficiais do YouTube)
+`youtube.json` tem filmes, séries, desenhos e documentários completos publicados de graça pelos próprios donos dos direitos
+nos seus canais oficiais (Mosfilm, Estúdio Gorky, FilmRise, Popcornflix, Movie Central, DW, ARTE, Peppa Pig, Turma da Mônica, Pocoyo...).
+Tocam dentro da LUMIN pelo player oficial do YouTube. Para atualizar a lista:
+```bash
+pip install yt-dlp && python3 tools/youtube_catalog.py
+```
+Só se acrescentam canais OFICIAIS (estúdio, distribuidor ou dono da marca), nunca canais de reuploads.

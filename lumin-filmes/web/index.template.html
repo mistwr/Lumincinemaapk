@@ -151,6 +151,50 @@ header.solid{background:var(--glass);backdrop-filter:blur(18px) saturate(1.4);-w
 #player.idle .top{opacity:0}
 .spin{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px;border:3px solid #ffffff33;border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;display:none}
 #player.load .spin{display:block}
+/* player YouTube (Grátis na LUMIN) */
+#ytp{position:fixed;inset:0;z-index:61;background:#000;display:none}
+#ytp.on{display:block}
+#ytbox,#ytbox iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+#ytp .top{position:absolute;left:0;top:0;z-index:2;display:flex;align-items:center;gap:10px;padding:10px;padding-top:max(10px,env(safe-area-inset-top))}
+#ytp .top button{width:42px;height:42px;border-radius:50%;background:#000a;font-size:18px;color:#fff}
+#ytp .top span{font-weight:700;font-size:14px;max-width:60vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 4px #000}
+#ytp.load .spin{display:block}
+.card.wide{flex-basis:208px}.card.wide .im{aspect-ratio:16/9}
+.card.wide .t{-webkit-line-clamp:2;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;white-space:normal}
+.card .du{position:absolute;right:6px;top:6px;z-index:2;background:#000c;border-radius:6px;padding:2px 6px;font-size:10.5px;font-weight:800}
+.grid.w{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+.sh .cover.wide{background-size:cover,cover}
+/* comando novo */
+.rmt{max-width:360px;margin:6px auto 0;padding:22px 18px 26px;border-radius:44px;background:linear-gradient(160deg,#25252a,#121215 60%);box-shadow:0 30px 60px #000c,inset 0 1px 0 #ffffff1c,inset 0 -2px 0 #0008;border:1px solid #ffffff10}
+.rmt .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 6px}
+.rk{height:54px;border-radius:999px;background:radial-gradient(circle at 50% 30%,#34343a,#1c1c20);box-shadow:0 4px 10px #0009,inset 0 1px 0 #ffffff1a;font-size:20px;color:#e8e8e8;outline:0;-webkit-tap-highlight-color:transparent;transition:transform .06s}
+.rk small{display:block;font-size:9.5px;color:var(--mut);font-weight:700;margin-top:-2px}
+.rk:active,.rk.dn{transform:scale(.93);background:radial-gradient(circle at 50% 30%,#46464d,#26262b)}
+.rk.pw{color:#ff6b6b}
+.rmt .pad{margin:22px auto 20px;width:240px;height:240px;background:radial-gradient(circle at 50% 38%,#303036,#16161a 70%);box-shadow:0 14px 30px #000b,inset 0 2px 0 #ffffff17,inset 0 -3px 6px #000a}
+.rmt .pad .u{left:85px;top:4px}.rmt .pad .d{left:85px;bottom:4px}.rmt .pad .l{left:4px;top:85px}.rmt .pad .r{right:4px;top:85px}
+.rmt .pad .ok{left:65px;top:65px}
+.rmt .pad button.dn,.rmt .pad button:active{background:#ffffff1a}
+.rock{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:16px 6px 0;align-items:center}
+.rock .rv{display:flex;flex-direction:column;border-radius:30px;overflow:hidden;background:radial-gradient(circle at 50% 20%,#34343a,#1c1c20);box-shadow:0 4px 10px #0009,inset 0 1px 0 #ffffff1a}
+.rock .rv button{height:56px;font-size:22px;color:#e8e8e8;outline:0}
+.rock .rv button:active,.rock .rv button.dn{background:#ffffff1a}
+.rock .rv i{font-style:normal;font-size:9.5px;color:var(--mut);font-weight:800;text-align:center;letter-spacing:.08em}
+.rmode{display:flex;gap:6px;justify-content:center;margin:4px 0 12px}
+.rmode button{padding:7px 14px;border-radius:999px;background:#ffffff0d;border:1px solid #ffffff14;font-size:12.5px;font-weight:800;color:#bbb;outline:0}
+.rmode button.on{background:var(--gold);color:#000;border-color:transparent}
+.tpad{height:250px;margin:18px 6px;border-radius:28px;background:radial-gradient(circle at 50% 40%,#2b2b31,#141417);box-shadow:inset 0 2px 10px #000c,inset 0 1px 0 #ffffff12;display:flex;align-items:center;justify-content:center;text-align:center;color:#777;font-size:12.5px;line-height:1.6;touch-action:none;user-select:none;-webkit-user-select:none;position:relative;overflow:hidden}
+.tpad .dot{position:absolute;width:60px;height:60px;margin:-30px;border-radius:50%;background:#ffffff22;pointer-events:none;opacity:0;transition:opacity .25s}
+.np{display:flex;gap:12px;align-items:center;padding:12px;border-radius:18px;background:#ffffff0d;border:1px solid #ffffff14;margin:0 0 12px}
+.np img{width:92px;aspect-ratio:16/9;object-fit:cover;border-radius:10px;background:#222;flex:0 0 auto}
+.np .nb{flex:1;min-width:0}.np b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np input[type=range]{width:100%;accent-color:var(--gold2);margin:8px 0 2px}
+.np .tm{display:flex;justify-content:space-between;font-size:11px;color:var(--mut)}
+.np .nbt{display:flex;gap:8px;justify-content:center;margin-top:6px}
+.np .nbt button{width:44px;height:38px;border-radius:12px;background:#ffffff12;font-size:16px;outline:0}
+.apps{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:16px}
+.apps button{padding:9px 14px;border-radius:14px;background:#ffffff0f;border:1px solid #ffffff16;font-size:13px;font-weight:800;outline:0}
+.apps button.gl{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border:0}
 /* barra inferior */
 nav.bn{position:fixed;left:0;right:0;bottom:0;z-index:35;display:flex;justify-content:space-around;padding:8px 6px calc(8px + env(safe-area-inset-bottom));background:var(--glass);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);border-top:1px solid var(--line)}
 nav.bn button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:700;color:#a8a39b;padding:4px 8px;border-radius:12px;outline:0;min-width:58px}
@@ -281,6 +325,7 @@ nav.bn button.srch.on span{background:var(--gold);color:#000}
     <button class="tab tvonly" data-tab="search">⌕ Pesquisar</button>
     <button class="tab" data-tab="tv">Séries</button>
     <button class="tab" data-tab="movie">Filmes</button>
+    <button class="tab" data-tab="gratis">▶ Grátis na LUMIN</button>
     <button class="tab" data-tab="nologin">⚡ Sem login</button>
     <button class="tab tvonly" data-tab="natal">🎄 Natal</button>
     <button class="tab tvonly" data-tab="arquivo">📼 Arquivo livre</button>
@@ -304,6 +349,8 @@ nav.bn button.srch.on span{background:var(--gold);color:#000}
 <div class="sheet" id="sheet"><div class="sh" id="sh"></div></div>
 <div id="player"><video id="vid" controls playsinline preload="metadata"></video><div class="spin"></div>
   <div class="top"><button id="back" aria-label="Voltar">←</button><span id="ptitle"></span></div></div>
+<div id="ytp"><div id="ytbox"></div><div class="spin"></div>
+  <div class="top"><button id="ytback" aria-label="Voltar">←</button><span id="yttitle"></span></div></div>
 <div class="toast" id="toast"></div>
 <nav class="bn" id="bn">
   <button data-nav="home" class="on"><span>⌂</span>Início</button>
@@ -409,7 +456,12 @@ function norm(x, type){
 }
 const BIG = () => matchMedia("(min-width:900px)").matches;
 function card(it){
-  const own = it.type==="lumin"||it.type==="ia";
+  const own = it.type==="lumin"||it.type==="ia"||it.type==="yt";
+  if (it.type==="yt"){
+    return `<button class="card wide ov" data-open="yt:${it.id}" aria-label="${esc(it.title)}"><span class="fr lu" title="Toca já na LUMIN">▶</span>
+      ${it.dur?`<span class="du">${fmtDur(it.dur)}</span>`:""}<div class="im" style="background-image:url('${BIG()?it.backdropS||it.poster:it.poster}')"></div>
+      ${it.pct?`<div class="pg"><i style="width:${it.pct}%"></i></div>`:""}<div class="t">${esc(it.title)}</div><div class="y">${esc(it.ch||"")}</div></button>`;
+  }
   const badge = own ? `<span class="fr lu" title="Toca já na LUMIN">▶</span>` : it.nologin ? `<span class="fr" title="Sem login">⚡</span>` : "";
   const land = BIG();
   const img = land ? (it.backdropS || it.poster) : it.poster;
@@ -438,6 +490,7 @@ async function render(){
     return;
   }
   if (tab==="arquivo") return renderArchiveTab();
+  if (tab==="gratis") return renderYtTab();
   if (tab==="search") return renderSearchHome();
   if (tab==="me") return renderMe();
   if (tab==="list"){
@@ -451,8 +504,13 @@ async function render(){
   if (tab==="home"){
     if (BIG()) html += `<div class="moods" id="moods">${MOODS.map((m,i)=>`<button class="mood ${m[3]?"sp":""}" data-mood="${i}">${m[0]}</button>`).join("")}</div>`;
     const cont = LUMIN_FILMS.filter(f=>prog[f.id]&&prog[f.id].t>20&&prog[f.id].t<f.dur-30);
-    if (cont.length) html += railHTML("cont","▶ Continuar a ver",false);
+    if (cont.length || ytCont().length) html += railHTML("cont","▶ Continuar a ver",false);
     html += `<div class="row"><div class="rh"><h2>🔥 Top 10 grátis hoje em Portugal</h2></div><div class="rail top" id="r-top">${skel(6)}</div></div>`;
+    if (YT.items.length){
+      html += `<div class="row"><div class="rh"><h2>🎬 Filmes completos grátis na LUMIN</h2><button data-more="yt:cat:filmes">Ver todos ›</button></div><div class="rail">${ytMix(ytList(ytCat("filmes")),20).map(card).join("")}</div></div>`;
+      html += `<div class="row"><div class="rh"><h2>🧸 Desenhos animados</h2><button data-more="yt:cat:desenhos">Ver todos ›</button></div><div class="rail">${ytMix(ytList(ytCat("desenhos"),"pt"),20).map(card).join("")}</div></div>`;
+      html += `<div class="row"><div class="rh"><h2>🌍 Documentários</h2><button data-more="yt:cat:docs">Ver todos ›</button></div><div class="rail">${ytMix(ytList(ytCat("docs")),20).map(card).join("")}</div></div>`;
+    }
     html += railHTML("lumin","▶ Toca já na LUMIN",true,"lumin");
   }
   secs.forEach((s,i)=> html += railHTML("s"+i, s[0], true, `${tab}:${i}`));
@@ -463,7 +521,7 @@ async function render(){
         return `<button class="tc" data-open="movie:${it.id}"><span class="n">${i+1}</span><div class="card" tabindex="-1"><div class="im" style="background-image:url('${it.poster}')"></div></div></button>`; }).join("");
     }).catch(()=>{});
     const cont = luminItems().filter(it=>{const p=prog[it.id];const f=LUMIN_FILMS.find(x=>x.id===it.id);return p&&p.t>20&&p.t<f.dur-30});
-    if ($("#r-cont")) $("#r-cont").innerHTML = cont.map(card).join("");
+    if ($("#r-cont")) $("#r-cont").innerHTML = [...ytCont(), ...cont].map(card).join("");
     $("#r-lumin").innerHTML = luminItems().map(card).join("");
   }
   secs.forEach(async (s,i)=>{
@@ -554,6 +612,7 @@ async function renderAll(key){
   let title, type, extra, page=1, total=1;
   if (key==="lumin"){ tab="lumin"; setTab(); return render(); }
   if (typeof key==="string" && key.startsWith("ia:")) return renderArchiveAll(+key.slice(3));
+  if (typeof key==="string" && key.startsWith("yt:")){ const [,k,v]=key.split(":"); return renderYtAll(k,v); }
   if (Array.isArray(key)) [title,type,extra]=key; else { const [t,i] = key.split(":"); [title,type,extra] = SECTIONS[t][+i]; }
   main.innerHTML = `<div class="ptitle">${esc(title)}</div><div class="grid" id="g"></div><button class="b more" id="moreB">Carregar mais</button>`;
   async function load(){
@@ -580,11 +639,11 @@ async function renderSearch(q){
     const items = d.results.filter(x=>(x.media_type==="movie"||x.media_type==="tv")&&x.poster_path).map(x=>norm(x));
     const ia = await iaSearchText(q);
     if ($("#q").value.trim()!==q) return;
-    const all = [...local,...ia.slice(0,12),...items];
+    const all = [...local,...ytSearch(q).slice(0,24),...ia.slice(0,12),...items];
     $("#g").innerHTML = all.length ? all.map(it=>card(it).replace('<span class="fr">GRÁTIS</span>','')).join("") : "";
     if (!all.length) main.insertAdjacentHTML("beforeend",`<p class="empty">Nada encontrado.</p>`);
     else main.insertAdjacentHTML("beforeend",`<p class="empty">Abre um título para ver se está grátis em Portugal.</p>`);
-  }catch{ $("#g").innerHTML = local.map(card).join("") || `<p class="empty">Sem ligação.</p>`; }
+  }catch{ $("#g").innerHTML = [...local,...ytSearch(q)].map(card).join("") || `<p class="empty">Sem ligação.</p>`; }
 }
 
 /* ================= detalhe ================= */
@@ -592,6 +651,7 @@ async function openItem(key){
   const [type,id] = key.split(/:(.+)/);
   if (type==="lumin") return openLumin(id);
   if (type==="ia") return openArchive(id);
+  if (type==="yt") return openYt(id);
   $("#sh").innerHTML = `<div class="cover"></div><button class="x" data-close>✕</button><div class="bd"><div class="empty">A carregar…</div></div>`;
   $("#sheet").classList.add("on"); $("#sheet").scrollTop=0;
   try{
@@ -811,9 +871,180 @@ function iaPlay(id, file, restart){
 }
 
 
+/* ================= Grátis na LUMIN: filmes, séries, desenhos e documentários completos =================
+   Publicados de graça pelos próprios donos dos direitos nos canais OFICIAIS do YouTube
+   (Mosfilm, FilmRise, Popcornflix, DW, Peppa Pig, Turma da Mônica...). Tocam dentro da LUMIN
+   pelo player oficial do YouTube (com os anúncios deles), sem login e sem sair da app.
+   Lista gerada por tools/youtube_catalog.py. */
+const YT = /*YOUTUBE*/{"channels":[],"items":[]};
+const YT_CATS = [["filmes","🎬 Filmes completos"],["desenhos","🧸 Desenhos e miúdos"],["series","📺 Séries e episódios"],["docs","🌍 Documentários"],["familia","👨‍👩‍👧 Família"]];
+let ytHidden = new Set(st.get("lf_yt_hidden", []));
+const ytThumb = (v,q) => `https://i.ytimg.com/vi/${v}/${q||"hqdefault"}.jpg`;
+function ytClean(t){
+  let s = String(t||"");
+  const parts = s.split(/\s+[|｜]\s+/).map(x=>x.trim()).filter(Boolean);
+  // "Pergunta chamativa? | Título real | Full Movie": fica o título real
+  if (parts.length>1 && (/[?!]$/.test(parts[0]) || parts[0].length>48) && parts[1].length<=48 && !/full|movie|film|episod|documentar/i.test(parts[1])) s = parts[1];
+  else if (parts[0] && parts[0].length>=4) s = parts[0];
+  s = s.replace(/\(?\b(free )?full (movie|film|episode|documentary)\b\)?/ig,"").replace(/\b(filme completo|episódio completo)\b/ig,"")
+       .replace(/[-–—:]\s*$/,"").replace(/\s{2,}/g," ").trim();
+  return s || String(t||"");
+}
+const YT_BY_ID = new Map();
+YT.items.forEach(x=>YT_BY_ID.set(x[0],x));
+function ytItem(x){
+  const ch = YT.channels[x[3]]||{}, p = prog["yt:"+x[0]];
+  return { type:"yt", id:x[0], title:ytClean(x[1]), year:"", poster:ytThumb(x[0],"hqdefault"), backdropS:ytThumb(x[0],"mqdefault"),
+    wide:true, ch:ch.n||"", cat:ch.cat, lang:ch.lang, dur:x[2], views:x[4]||0, pct: p&&p.t>0 ? Math.min(100,p.t/x[2]*100) : 0 };
+}
+function ytList(filter, sort){
+  let l = YT.items.filter(x=>!ytHidden.has(x[0]) && filter(x, YT.channels[x[3]]||{}));
+  if (sort!=="none") l = l.sort((a,b)=>{
+    const pa=(YT.channels[a[3]]||{}).lang==="pt", pb=(YT.channels[b[3]]||{}).lang==="pt";
+    return sort==="pt" && pa!==pb ? (pb-pa) : (b[4]||0)-(a[4]||0);
+  });
+  return l.map(ytItem);
+}
+const ytCat = c => (x,ch)=>ch.cat===c;
+/* mistura canais para a linha não ficar toda do mesmo canal */
+function ytMix(list, n){
+  const by = {}; list.forEach(it=>(by[it.ch]=by[it.ch]||[]).push(it));
+  const out=[]; const keys=Object.keys(by); let i=0;
+  while(out.length<n && keys.some(k=>by[k].length)){ const k=keys[i++%keys.length]; if(by[k].length) out.push(by[k].shift()); }
+  return out;
+}
+function ytCont(){ return YT.items.filter(x=>{ const p=prog["yt:"+x[0]]; return p&&p.t>30&&p.t<x[2]-60; })
+  .sort((a,b)=>prog["yt:"+b[0]].at-prog["yt:"+a[0]].at).map(ytItem); }
+function ytSearch(q){
+  const w = q.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").split(/\s+/).filter(Boolean);
+  if (!w.length) return [];
+  return YT.items.filter(x=>{ if(ytHidden.has(x[0])) return false; const s=(x[1]+" "+((YT.channels[x[3]]||{}).n||"")).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,""); return w.every(k=>s.includes(k)); })
+    .sort((a,b)=>(b[4]||0)-(a[4]||0)).slice(0,60).map(ytItem);
+}
+function renderYtTab(){
+  const main=$("#main");
+  let h = `<div class="ptitle">▶ Grátis na LUMIN</div>
+    <p class="empty" style="text-align:left;padding:0 14px 12px">${YT.items.length.toLocaleString("pt-PT")} filmes, episódios e documentários completos, publicados de graça pelos próprios estúdios e canais oficiais. Tocam aqui dentro, sem login.</p>`;
+  const cont = ytCont(); if (cont.length) h += `<div class="row"><div class="rh"><h2>▶ Continuar a ver</h2></div><div class="rail">${cont.map(card).join("")}</div></div>`;
+  YT_CATS.forEach(([c,t])=>{ if (YT.channels.some(ch=>ch.cat===c)) h += `<div class="row"><div class="rh"><h2>${esc(t)}</h2><button data-more="yt:cat:${c}">Ver todos ›</button></div><div class="rail">${ytMix(ytList(ytCat(c), c==="desenhos"?"pt":"views"),24).map(card).join("")}</div></div>`; });
+  h += `<div class="sec" style="padding:8px 14px 0">Canais oficiais</div>`;
+  YT.channels.forEach((ch,i)=>{ const l=ytList(x=>x[3]===i); if(!l.length) return;
+    h += `<div class="row"><div class="rh"><h2>${esc(ch.n)} <small style="color:var(--mut);font-weight:600">· ${l.length}</small></h2><button data-more="yt:ch:${i}">Ver todos ›</button></div><div class="rail">${l.slice(0,20).map(card).join("")}</div></div>`; });
+  main.innerHTML = h;
+}
+function renderYtAll(kind, v){
+  const main=$("#main"); window.scrollTo(0,0); hideHero();
+  const list = kind==="ch" ? ytList(x=>x[3]===+v) : ytList(ytCat(v), v==="desenhos"?"pt":"views");
+  const title = kind==="ch" ? (YT.channels[+v]||{}).n : (YT_CATS.find(c=>c[0]===v)||[])[1];
+  let n=0;
+  main.innerHTML = `<div class="ptitle">${esc(title||"")}</div><div class="grid w" id="g"></div><button class="b more" id="moreB">Carregar mais</button>`;
+  const load=()=>{ $("#g").insertAdjacentHTML("beforeend", list.slice(n,n+60).map(card).join("")); n+=60;
+    $("#moreB").disabled = n>=list.length; $("#moreB").textContent = n>=list.length ? `${list.length} títulos` : `Carregar mais (${list.length})`; };
+  $("#moreB").onclick=load; load();
+}
+function fmtDur(s){ s=Math.round(s/60); return s>=60 ? `${Math.floor(s/60)} h ${s%60?String(s%60).padStart(2,"0")+" min":""}` : `${s} min`; }
+function openYt(id){
+  const x = YT_BY_ID.get(id); if (!x) return;
+  const it = ytItem(x), p = prog["yt:"+id], ch = YT.channels[x[3]]||{};
+  const more = ytList(y=>y[3]===x[3] && y[0]!==id).slice(0,16);
+  const fav = {type:"yt",id,title:it.title,poster:it.poster,year:""};
+  const inList = myList.some(f=>f.type==="yt"&&f.id===id);
+  $("#sh").innerHTML = `<div class="blur" style="background-image:url('${it.poster}')"></div>
+    <div class="cover wide" id="cov" style="background-image:url('${ytThumb(id,"maxresdefault")}'),url('${it.poster}')"></div><button class="x" data-close>✕</button>
+    <div class="bd"><h3>${esc(it.title)}</h3>
+    <div class="meta"><span>${fmtDur(x[2])}</span><span>${esc(ch.n||"")}</span><span>✔ Canal oficial</span>${ch.lang==="pt"?"<span>🇵🇹 Português</span>":""}</div>
+    <div class="btns"><button class="b p" data-ytplay="${id}">▶ ${p&&p.t>30?"Continuar":"Ver agora"}</button>
+      ${p&&p.t>30?`<button class="b" data-ytplay="${id}" data-restart="1">↺ Do início</button>`:""}
+      ${canSendTitle()?`<button class="b g" data-tvyt="${id}">📺 Ver na TV</button>`:""}
+      <button class="b" data-fav='${esc(JSON.stringify(fav))}'>${inList?"✓ Na lista":"＋ Lista"}</button></div>
+    ${it.title!==x[1]?`<p class="ov">${esc(x[1])}</p>`:""}
+    ${more.length?`<div class="sec">Mais de ${esc(ch.n)}</div><div class="rail" style="padding-left:0">${more.map(card).join("")}</div>`:""}
+    <div class="btns" style="margin-top:12px"><button class="b" data-ythide="${id}">🚫 Esconder</button></div>
+    <div class="lic">Publicado de graça por ${esc(ch.n||"")} no seu canal oficial do YouTube. A LUMIN não aloja este vídeo: toca no player oficial do YouTube, com os anúncios do canal.</div></div>`;
+  $("#sheet").classList.add("on"); $("#sheet").scrollTop=0; setTimeout(()=>$("#sh .b")?.focus(),60);
+}
+/* player YouTube embutido (IFrame API: progresso, erros e comando da TV) */
+let ytP=null, ytCur=null, ytSaveT=null, ytApi=null;
+function ytLoadApi(){
+  if (ytApi) return ytApi;
+  ytApi = new Promise((res,rej)=>{ if (window.YT && window.YT.Player) return res();
+    window.onYouTubeIframeAPIReady = () => res();
+    const s=document.createElement("script"); s.src="https://www.youtube.com/iframe_api"; s.onerror=()=>{ ytApi=null; rej(); }; document.head.appendChild(s); });
+  return ytApi;
+}
+async function ytPlay(id, restart){
+  const x = YT_BY_ID.get(id); if (!x) return;
+  closeSheet(); ytCur = {id, dur:x[2], title:ytClean(x[1])};
+  const o=$("#ytp"); o.classList.add("on","load"); $("#yttitle").textContent = ytCur.title;
+  try{ document.documentElement.requestFullscreen?.().catch(()=>{}); screen.orientation?.lock?.("landscape").catch(()=>{}) }catch{}
+  const p = prog["yt:"+id]; const start = !restart && p && p.t<x[2]-60 ? Math.floor(p.t) : 0;
+  try{ await ytLoadApi(); }catch{ o.classList.remove("load"); toast("Sem ligação ao YouTube"); return; }
+  if (!ytCur || ytCur.id!==id) return;
+  const pv = {autoplay:1, playsinline:1, rel:0, modestbranding:1, fs:1, iv_load_policy:3, start, hl:"pt", cc_lang_pref:"pt", origin:location.origin};
+  if ((YT.channels[x[3]]||{}).lang!=="pt") pv.cc_load_policy = 1;
+  if (ytP){ try{ ytP.loadVideoById({videoId:id, startSeconds:start}); return; }catch{ try{ytP.destroy()}catch{} ytP=null; } }
+  $("#ytbox").innerHTML = `<div id="ytframe"></div>`;
+  ytP = new window.YT.Player("ytframe", { videoId:id, playerVars:pv, width:"100%", height:"100%",
+    events:{
+      onReady: e=>{ o.classList.remove("load"); try{ e.target.playVideo(); }catch{} },
+      onStateChange: e=>{ if (e.data===1){ o.classList.remove("load"); ytTick(); } if (e.data===0) ytEnded(); },
+      onError: e=>{ o.classList.remove("load"); const id2=ytCur&&ytCur.id; if (!id2) return;
+        if (e.data===101||e.data===150||e.data===100){ ytHidden.add(id2); st.set("lf_yt_hidden",[...ytHidden]); toast("Este vídeo deixou de estar disponível fora do YouTube. Escondido."); }
+        else toast("Não foi possível tocar este vídeo.");
+        closeYt(); }
+    }});
+}
+function ytSave(){ if (!ytP||!ytCur||!ytP.getCurrentTime) return; const t=ytP.getCurrentTime(); if (t>5){ prog["yt:"+ytCur.id]={t:Math.floor(t),at:Date.now()}; st.set("lumin_filmes_prog",prog); } }
+function ytTick(){ clearInterval(ytSaveT); ytSaveT=setInterval(()=>{ ytSave(); ytReport(); },5000); }
+function ytEnded(){ if (ytCur){ delete prog["yt:"+ytCur.id]; st.set("lumin_filmes_prog",prog); }
+  const x = ytCur && YT_BY_ID.get(ytCur.id);
+  const next = x && ["desenhos","series"].includes((YT.channels[x[3]]||{}).cat) ? ytList(y=>y[3]===x[3]&&y[0]!==x[0]&&!prog["yt:"+y[0]])[0] : null;
+  if (next){ toast("▶ A seguir: "+next.title); return ytPlay(next.id, true); }
+  closeYt(); }
+function closeYt(){
+  ytSave(); clearInterval(ytSaveT); try{ ytP && ytP.stopVideo && ytP.stopVideo(); }catch{}
+  $("#ytp").classList.remove("on","load"); ytCur=null; ytReport();
+  if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  try{ screen.orientation.unlock() }catch{}
+  if (["home","gratis","me"].includes(tab)) render();
+}
+const ytOn = () => $("#ytp").classList.contains("on");
+/* comandos de reprodução comuns aos dois players (video LUMIN e YouTube) */
+function mediaCmd(a, v){
+  if (ytOn() && ytP && ytP.getPlayerState){
+    const t = ytP.getCurrentTime()||0;
+    if (a==="playpause") ytP.getPlayerState()===1 ? ytP.pauseVideo() : ytP.playVideo();
+    else if (a==="ffw") ytP.seekTo(t+(v||10), true); else if (a==="rew") ytP.seekTo(Math.max(0,t-(v||10)), true);
+    else if (a==="seek") ytP.seekTo(+v||0, true);
+    else if (a==="volup") ytP.setVolume(Math.min(100,(ytP.getVolume()||50)+10)); else if (a==="voldown") ytP.setVolume(Math.max(0,(ytP.getVolume()||50)-10));
+    else if (a==="mute") ytP.isMuted()?ytP.unMute():ytP.mute();
+    else if (a==="stop") closeYt();
+    setTimeout(ytReport,300); return true;
+  }
+  if ($("#player").classList.contains("on")){
+    if (a==="playpause") vid.paused?vid.play():vid.pause();
+    else if (a==="ffw") vid.currentTime+=(v||10); else if (a==="rew") vid.currentTime-=(v||10);
+    else if (a==="seek") vid.currentTime=+v||0;
+    else if (a==="volup"||a==="voldown") vid.volume=Math.max(0,Math.min(1,vid.volume+(a==="volup"?.1:-.1)));
+    else if (a==="mute") vid.muted=!vid.muted;
+    else if (a==="stop") closePlayer();
+    setTimeout(ytReport,300); return true;
+  }
+  return false;
+}
+/* estado do que está a tocar (o telemóvel mostra-o no comando) */
+function nowPlaying(){
+  if (ytOn() && ytCur && ytP && ytP.getCurrentTime) return {on:true, title:ytCur.title, t:ytP.getCurrentTime()||0, d:ytP.getDuration()||ytCur.dur, paused:ytP.getPlayerState()!==1, thumb:ytThumb(ytCur.id,"mqdefault")};
+  if ($("#player").classList.contains("on") && cur) return {on:true, title:cur.title, t:vid.currentTime||0, d:isFinite(vid.duration)?vid.duration:(cur.dur<9e8?cur.dur:0), paused:vid.paused, thumb:cur.poster||""};
+  return {on:false};
+}
+window.luminNowPlaying = () => JSON.stringify(nowPlaying());
+function ytReport(){ try{ if (LINK.tv) LINK.tv.send({t:"np", ...nowPlaying()}); }catch{} }
+
+
 /* ================= TV: Chromecast, LUMIN na TV, Smart TVs, ponte e comando ================= */
 const N = () => window.LuminNative || null;
-const TV = { connected: st.get("lf_tv2", null), devices: [], stvs: [], serverOn:false, bridge:{} };
+const TV = { connected: st.get("lf_tv2", null), devices: [], stvs: [], serverOn:false, bridge:{}, cloud: st.get("lf_tvcloud", null), np:null };
 const KIND_IC = { lumin:"📺", web:"🌐", samsung:"🟦", lg:"🔴", roku:"🟪", gtv:"🟢", cloud:"🔗" };
 const KIND_TX = { lumin:"LUMIN na TV", web:"LUMIN no browser da TV", samsung:"Samsung Smart TV", lg:"LG webOS", roku:"Roku", gtv:"Google TV / Android TV", cloud:"LUMIN Link (luminai.pt/tv)" };
 let webCastReady = false;
@@ -842,19 +1073,25 @@ function castBtns(m){
   return (castOK()?`<button class="b g" data-cast='${j}'>📡 Enviar para a TV (Chromecast)</button>`:"") + (canSendTitle()?`<button class="b" data-tvplay='${j}'>📺 Ver na TV</button>`:"");
 }
 function updTvBtn(){ $("#tvBtn").classList.toggle("live", !!TV.connected || TV.serverOn || !!TV.bridge.running); }
-let tvCb = null;
-window.__luminTVResult = ok => { const f=tvCb; tvCb=null; f && f(ok); };
+let tvCb = null, tvQ = Promise.resolve();
+window.__luminTVResult = (ok, body) => { const f=tvCb; tvCb=null; f && f(ok, body); };
+/* um pedido de cada vez (a resposta nativa não traz id) */
 function tvSendLumin(cmd){
-  return new Promise(res=>{
-    const c=TV.connected; if (!c || !N()) return res(false);
-    tvCb = ok=>res(ok); setTimeout(()=>{ if(tvCb){ tvCb=null; res(false);} },6000);
+  const run = () => new Promise(res=>{
+    const c=TV.connected; if (!c || !N() || c.kind!=="lumin") return res(false);
+    tvCb = (ok, body)=>{ if (ok && body && body.np){ TV.np=body.np; TV.npAt=Date.now(); updNp(); } res(ok); };
+    setTimeout(()=>{ if(tvCb){ tvCb=null; res(false);} },6000);
     N().tvSend(c.host, c.port, c.code, JSON.stringify(cmd));
   });
+  const p = tvQ.then(run, run); tvQ = p.catch(()=>{}); return p;
 }
 /* envia um comando para a TV ligada, seja ela qual for */
 async function tvDo(cmd, okMsg){
   const c = TV.connected; if (!c){ openRemote(); return false; }
   let ok = true;
+  const content = ["open","play","yt","watch","go","media","status"].includes(cmd.t);
+  if (content && TV.cloud && !["lumin","web","cloud"].includes(c.kind)){   // Smart TV com a LUMIN aberta no browser
+    if(!LINK.phone || LINK.phone.code!==TV.cloud) linkPhone(TV.cloud,true,true); LINK.phone.send(cmd); if (okMsg) toast(okMsg); return true; }
   if (c.kind==="lumin") ok = await tvSendLumin(cmd);
   else if (c.kind==="web") N().bridgePush(JSON.stringify(cmd));
   else if (c.kind==="cloud"){ if(!LINK.phone || LINK.phone.code!==c.code) linkPhone(c.code,true); LINK.phone.send(cmd); }
@@ -863,6 +1100,8 @@ async function tvDo(cmd, okMsg){
     N().stvOpenUrl("gtv", c.host, url);
   }
   else if (c.kind==="gtv" && cmd.t==="link") N().stvOpenUrl("gtv", c.host, cmd.url);
+  else if (cmd.t==="yt" && ["gtv","lg","samsung"].includes(c.kind)) N().stvOpenUrl(c.kind, c.host, c.kind==="gtv" ? "luminfilmes://yt?id="+encodeURIComponent(cmd.id) : "https://www.youtube.com/watch?v="+encodeURIComponent(cmd.id));
+  else if (cmd.t==="media"){ const map={playpause:"playpause",ffw:"ffw",rew:"rew",volup:"volup",voldown:"voldown",mute:"mute",stop:"back"}; if(map[cmd.a]) N().stvKey(c.kind, c.host, map[cmd.a]); }
   else if (cmd.t==="key") N().stvKey(c.kind, c.host, cmd.k);
   else if (cmd.t==="text") N().stvText(c.kind, c.host, cmd.v);
   else if (cmd.t==="home") N().stvKey(c.kind, c.host, "home");
@@ -905,18 +1144,7 @@ function renderRemote(){
   TV.serverOn = !!info.running; TV.bridge = br; updTvBtn();
   if (TV.connected){
     const c=TV.connected;
-    h += `<button class="dev on" data-tvforget><span class="ic">${KIND_IC[c.kind]}</span><span><b>${esc(c.name)}</b><small>${KIND_TX[c.kind]} · ligado · toca para desligar</small></span></button>
-    <div class="pad"><button class="u" data-k="up">▲</button><button class="l" data-k="left">◀</button><button class="ok" data-k="ok">OK</button><button class="r" data-k="right">▶</button><button class="d" data-k="down">▼</button></div>
-    <div class="keys">
-      <button data-k="back">↩<small>Voltar</small></button><button data-k="home">⌂<small>Início</small></button><button data-k="playpause">⏯<small>Play/Pausa</small></button>
-      <button data-k="rew">⏪<small>Recuar</small></button><button data-k="search">⌕<small>Pesquisa</small></button><button data-k="ffw">⏩<small>Avançar</small></button>
-      <button data-k="voldown">🔉<small>Vol -</small></button><button data-k="mute">🔇<small>Mudo</small></button><button data-k="volup">🔊<small>Vol +</small></button>
-    </div>
-    ${c.kind==="gtv"?`<div class="keys" style="margin-top:12px"><button data-k="power">⏻<small>Ligar/desl.</small></button><button data-k="chup">▲<small>Canal +</small></button><button data-k="settings">⚙<small>Definições</small></button>
-      <button data-k="input">⇄<small>Entrada</small></button><button data-k="chdown">▼<small>Canal -</small></button><button data-k="guide">☰<small>Guia</small></button></div>
-      <div class="btns" style="justify-content:center;margin-top:12px"><button class="b" data-gtvapp="https://www.youtube.com">▶ YouTube</button><button class="b" data-gtvapp="https://www.rtp.pt/play/">RTP Play</button></div>`:""}
-    <div class="code"><input id="tvText" placeholder="${c.kind==="gtv"?"Pesquisar na TV e Enter…":"Escrever na TV e Enter…"}" style="letter-spacing:0;font-size:16px;width:100%;max-width:320px"></div>
-    ${c.kind==="lg" && br.running ? `<div class="btns" style="justify-content:center"><button class="b g" data-lgopen>🚀 Abrir a LUMIN nesta LG</button></div>`:""}`;
+    h += remoteBody(c, br);
     if (c.kind==="cloud") h += `<p class="empty">Escolhe um filme no telemóvel e carrega <b>📺 Ver na TV</b>: abre logo na TV.</p><div class="btns" style="justify-content:center"><button class="b g" data-rclose>🎬 Escolher filmes</button></div>`;
   } else if (TV.pendingSTV){
     h += `<p class="empty">A ligar a <b>${esc(TV.pendingSTV.name)}</b>…<br>Se aparecer um pedido no ecrã da TV, carrega em <b>Permitir</b>.</p>`;
@@ -927,7 +1155,7 @@ function renderRemote(){
     if (br.running) h += devBtn({kind:"web",name:"Browser da TV",host:br.ip}, "Controla a LUMIN aberta no browser da TV");
     h += linkBox;
   }
-  if (!n){ $("#remote").innerHTML = h; return; }
+  if (!n){ $("#remote").innerHTML = h; wireRemote(); return; }
   // ponte
   h += `<div class="sec">📲 Passar a LUMIN para a TV</div>`;
   if (br.running){
@@ -948,6 +1176,94 @@ function renderRemote(){
   $("#remote").innerHTML = h;
   if (br.running && $("#qr")) drawQR($("#qr"), br.apk);
   const ti=$("#tvText"); if(ti) ti.onkeydown=e=>{ if(e.key==="Enter"&&ti.value){ tvDo({t:"text",v:ti.value},"⌨️ Enviado"); ti.value=""; } };
+  wireRemote();
+}
+/* ---------- comando: corpo, touchpad, repetição ao manter, vibração, "a tocar agora" ---------- */
+const RM = { mode: st.get("lf_rmode","pad"), ptr:false, rep:null, poll:null };
+function buzz(ms){ try{ if (N() && N().vibrate) N().vibrate(ms||15); else navigator.vibrate && navigator.vibrate(ms||15); }catch{} }
+const fmtT = t => { t=Math.max(0,Math.floor(t||0)); const h=Math.floor(t/3600), m=Math.floor(t%3600/60), x=String(t%60).padStart(2,"0"); return h?`${h}:${String(m).padStart(2,"0")}:${x}`:`${m}:${x}`; };
+const npCapable = c => c && (["lumin","cloud"].includes(c.kind) || !!TV.cloud);
+function npHTML(){
+  const np = TV.np; if (!np || !np.on || Date.now()-(TV.npAt||0)>20000) return `<div id="npbox"></div>`;
+  return `<div id="npbox"><div class="np">${np.thumb?`<img src="${esc(np.thumb)}" alt="">`:""}<div class="nb"><small style="color:var(--gold2);font-weight:800;font-size:10.5px">A TOCAR NA TV</small><b>${esc(np.title||"")}</b>
+    ${np.d?`<input type="range" id="npseek" min="0" max="${Math.floor(np.d)}" value="${Math.floor(np.t||0)}"><div class="tm"><span id="npt">${fmtT(np.t)}</span><span>${fmtT(np.d)}</span></div>`:""}
+    <div class="nbt"><button data-npa="rew" data-v="30">⏪</button><button data-npa="playpause">${np.paused?"▶":"⏸"}</button><button data-npa="ffw" data-v="30">⏩</button><button data-npa="stop">⏹</button></div></div></div></div>`;
+}
+function updNp(){
+  const box=$("#npbox"); if (!box || !$("#remote").classList.contains("on")) return;
+  const sk=$("#npseek"); if (sk && RM.seeking) return;
+  box.outerHTML = npHTML(); const s2=$("#npseek");
+  if (s2){ s2.oninput=()=>{ RM.seeking=true; $("#npt").textContent=fmtT(+s2.value); }; s2.onchange=()=>{ RM.seeking=false; buzz(20); tvMedia("seek", +s2.value); }; }
+}
+function tvMedia(a, v){ tvDo({t:"media", a, v: v!=null ? +v : undefined}); setTimeout(npPoll, 500); }
+function npPoll(){
+  const c=TV.connected; if (!npCapable(c)) return;
+  if (c.kind==="lumin") tvSendLumin({t:"status"});
+  else tvDo({t:"status"});
+}
+function remoteBody(c, br){
+  const gtv = c.kind==="gtv", smart = ["gtv","lg","samsung","roku"].includes(c.kind);
+  const key = (k, ic, lbl, cls) => `<button class="rk ${cls||""}" data-k="${k}">${ic}${lbl?`<small>${lbl}</small>`:""}</button>`;
+  let h = `<button class="dev on" data-tvforget><span class="ic">${KIND_IC[c.kind]}</span><span><b>${esc(c.name)}</b><small>${KIND_TX[c.kind]} · ligado · toca para desligar</small></span></button>`;
+  h += npCapable(c) ? npHTML() : "";
+  h += `<div class="rmode"><button data-rmode="pad" class="${RM.mode==="pad"?"on":""}">✛ Botões</button><button data-rmode="touch" class="${RM.mode==="touch"?"on":""}">☝ Touchpad</button></div>`;
+  h += `<div class="rmt"><div class="row3">${gtv?key("power","⏻","","pw"):key("back","↩","Voltar")}${key("home","⌂","Início")}${gtv?key("back","↩","Voltar"):key("search","⌕","Pesquisa")}</div>`;
+  h += RM.mode==="touch"
+    ? `<div class="tpad" id="tpad"><span class="dot" id="tdot"></span><span>Desliza para mover<br>Toca para OK · Mantém para voltar</span></div>`
+    : `<div class="pad"><button class="u" data-k="up">▲</button><button class="l" data-k="left">◀</button><button class="ok" data-k="ok">OK</button><button class="r" data-k="right">▶</button><button class="d" data-k="down">▼</button></div>`;
+  h += `<div class="row3">${key("rew","⏪")}${key("playpause","⏯")}${key("ffw","⏩")}</div>`;
+  h += `<div class="rock"><div class="rv"><button data-k="volup">＋</button><i>VOL</i><button data-k="voldown">－</button></div>
+    <div style="display:grid;gap:12px">${key("mute","🔇","Mudo")}${gtv?key("settings","⚙","Definições"):key("search","⌕","Pesquisa")}</div>
+    ${gtv?`<div class="rv"><button data-k="chup">▲</button><i>CANAL</i><button data-k="chdown">▼</button></div>`:`<div style="display:grid;gap:12px">${key("back","↩","Voltar")}${key("home","⌂","Início")}</div>`}</div>`;
+  if (gtv) h += `<div class="row3" style="margin-top:12px">${key("input","⇄","Entrada")}${key("guide","☰","Guia")}${key("search","⌕","Pesquisa")}</div>`;
+  h += `</div>`;
+  h += `<div class="code"><input id="tvText" placeholder="${gtv?"Pesquisar na TV e Enter…":"Escrever na TV e Enter…"}" style="letter-spacing:0;font-size:16px;width:100%;max-width:320px"></div>`;
+  if (smart){
+    h += `<div class="apps">${["gtv","lg","samsung"].includes(c.kind)?`<button class="gl" data-launch="lumin">🚀 Abrir a LUMIN na TV</button>`:""}
+      ${gtv?`<button data-gtvapp="https://www.youtube.com">▶ YouTube</button><button data-gtvapp="https://www.rtp.pt/play/">RTP Play</button>`:""}</div>`;
+    if (TV.cloud) h += `<p class="empty" style="padding:6px 0 0">🔗 LUMIN aberta na TV (código ${esc(TV.cloud)}): os filmes que escolheres no telemóvel abrem lá.</p>`;
+  }
+  if (c.kind==="lg" && br.running) h += `<div class="btns" style="justify-content:center"><button class="b g" data-lgopen>📲 Abrir pela ponte local</button></div>`;
+  if (c.kind==="cloud") h += `<p class="empty">Escolhe um filme no telemóvel e carrega <b>📺 Ver na TV</b>: abre logo na TV.</p><div class="btns" style="justify-content:center"><button class="b g" data-rclose>🎬 Escolher filmes</button></div>`;
+  return h;
+}
+/* abre a LUMIN na TV: app (Google TV) ou luminai.pt/tv no browser (LG/Samsung), já ligada a este telemóvel */
+function launchOnTv(){
+  const c=TV.connected; if (!c) return;
+  buzz(25);
+  if (c.kind==="gtv"){ N().stvOpenUrl("gtv", c.host, "luminfilmes://home"); toast("🚀 A abrir a LUMIN na TV… (se não abrir, instala-a na TV com a ponte)"); return; }
+  const code = TV.cloud || newCode(); TV.cloud = code; st.set("lf_tvcloud", code);
+  N().stvOpenUrl(c.kind, c.host, SITE_TV+"?link="+code);
+  linkPhone(code, true, true);
+  toast("🚀 A abrir a LUMIN no browser da TV…"); renderRemote();
+}
+/* toques: vibração, repetição ao manter (setas e volume) e touchpad */
+function wireRemote(){
+  const root=$("#remote"); if (!root) return;
+  root.querySelectorAll("[data-k]").forEach(b=>{
+    const k=b.dataset.k, repeat=["up","down","left","right","volup","voldown","chup","chdown"].includes(k);
+    b.onpointerdown=e=>{ b.classList.add("dn"); buzz(15); RM.ptr=true;
+      if (repeat){ clearTimeout(RM.rep); RM.rep=setTimeout(function go(){ tvDo({t:"key",k}); buzz(8); RM.rep=setTimeout(go,130); },450); } };
+    const up=()=>{ b.classList.remove("dn"); clearTimeout(RM.rep); };
+    b.onpointerup=up; b.onpointerleave=up; b.onpointercancel=up;
+  });
+  const tp=$("#tpad"); if (tp){
+    let sx=0, sy=0, moved=0, lt=0, hold=null; const dot=$("#tdot");
+    const showDot=(x,y)=>{ const r=tp.getBoundingClientRect(); dot.style.left=(x-r.left)+"px"; dot.style.top=(y-r.top)+"px"; dot.style.opacity=1; };
+    tp.onpointerdown=e=>{ tp.setPointerCapture(e.pointerId); sx=e.clientX; sy=e.clientY; moved=0; lt=0; showDot(sx,sy);
+      hold=setTimeout(()=>{ hold=null; if(!moved){ moved=-1; buzz(40); tvDo({t:"key",k:"back"}); } },650); };
+    tp.onpointermove=e=>{ if(!e.buttons && e.pointerType==="mouse") return; showDot(e.clientX,e.clientY);
+      const dx=e.clientX-sx, dy=e.clientY-sy, step=48;
+      if (Math.abs(dx)<step && Math.abs(dy)<step) return;
+      clearTimeout(hold); const now=Date.now(); if (now-lt<70) return; lt=now; moved++;
+      const k = Math.abs(dx)>Math.abs(dy) ? (dx>0?"right":"left") : (dy>0?"down":"up");
+      tvDo({t:"key",k}); buzz(8); sx=e.clientX; sy=e.clientY; };
+    tp.onpointerup=()=>{ clearTimeout(hold); dot.style.opacity=0; if (moved===0){ buzz(18); tvDo({t:"key",k:"ok"}); } };
+    tp.onpointercancel=()=>{ clearTimeout(hold); dot.style.opacity=0; };
+  }
+  updNp();
+  clearInterval(RM.poll);
+  if (npCapable(TV.connected)){ npPoll(); RM.poll=setInterval(()=>{ if(!$("#remote").classList.contains("on")) return clearInterval(RM.poll); npPoll(); },2500); }
 }
 function pickDevice(d){
   TV.lastPick = d;
@@ -993,19 +1309,17 @@ window.luminRemote = cmd => {
   try{
     if (cmd.t==="open"){ closeRemote(); openItem(cmd.key); }
     else if (cmd.t==="play"){ closeRemote(); playSrc({id:"tv:"+cmd.src, title:cmd.title||"LUMIN", src:cmd.src, dur:9e9}); }
-    else if (cmd.t==="media"){ if(!$("#player").classList.contains("on")) return;
-      if(cmd.a==="playpause") vid.paused?vid.play():vid.pause(); else if(cmd.a==="ffw") vid.currentTime+=10; else if(cmd.a==="rew") vid.currentTime-=10; }
+    else if (cmd.t==="yt"){ closeRemote(); ytPlay(cmd.id, !!cmd.restart); }
+    else if (cmd.t==="media"){ mediaCmd(cmd.a, cmd.v); }
     else if (cmd.t==="text"){ const q=$("#q"); q.value=cmd.v; q.dispatchEvent(new Event("input")); }
-    else if (cmd.t==="home"){ closeSheet(); if($("#player").classList.contains("on")) closePlayer(); tab="home"; $("#q").value=""; setTab(); render(); }
+    else if (cmd.t==="home"){ closeSheet(); if(ytOn()) closeYt(); if($("#player").classList.contains("on")) closePlayer(); tab="home"; $("#q").value=""; setTab(); render(); }
     else if (cmd.t==="search"){ $("#q").focus(); }
     else if (cmd.t==="key"){ // versão browser: simula o comando
       const k=cmd.k, map={up:"ArrowUp",down:"ArrowDown",left:"ArrowLeft",right:"ArrowRight"};
       if (map[k]) document.dispatchEvent(new KeyboardEvent("keydown",{key:map[k],bubbles:true}));
       else if (k==="ok"){ const a=document.activeElement; if(a&&a!==document.body) a.click(); else document.dispatchEvent(new KeyboardEvent("keydown",{key:"ArrowDown",bubbles:true})); }
       else if (k==="back") window.luminBack();
-      else if (["playpause","ffw","rew"].includes(k)) window.luminRemote({t:"media",a:k});
-      else if (k==="volup"||k==="voldown"){ vid.volume=Math.max(0,Math.min(1,vid.volume+(k==="volup"?.1:-.1))); }
-      else if (k==="mute") vid.muted=!vid.muted;
+      else if (["playpause","ffw","rew","volup","voldown","mute"].includes(k)) mediaCmd(k);
     }
   }catch(e){}
 };
@@ -1056,9 +1370,12 @@ function newCode(){ var c=""; for(var i=0;i<4;i++) c+=CODE_ABC[Math.floor(Math.r
 /* lado da TV: recebe comandos; mostra QR + código */
 function startTvLink(){
   if (LINK.tv) return;
-  var code = st.get("lf_tvlink", null); if (!code){ code=newCode(); st.set("lf_tvlink",code); }
+  var code = st.get("lf_tvlink", null);
+  try{ var lk=new URLSearchParams(location.search).get("link"); if (lk && /^[2-9A-HJKMNP-Z]{4}$/.test(lk.toUpperCase())){ code=lk.toUpperCase(); st.set("lf_tvlink",code); } }catch(e){}
+  if (!code){ code=newCode(); st.set("lf_tvlink",code); }
   LINK.tv = new Relay(code, function(cmd){
-    if (cmd.t==="hello"){ hideLinkBadge(); toast("📱 Telemóvel ligado. Já podes escolher no telemóvel"); LINK.tv.send({t:"hi",name:"TV LUMIN"}); return; }
+    if (cmd.t==="hello"){ hideLinkBadge(); toast("📱 Telemóvel ligado. Já podes escolher no telemóvel"); LINK.tv.send({t:"hi",name:"TV LUMIN"}); ytReport(); return; }
+    if (cmd.t==="status"){ ytReport(); return; }
     hideLinkBadge();
     if (cmd.t==="go"){ if (N() && N().openInApp) N().openInApp(cmd.url, cmd.title||"", cmd.prov||""); else location.href = cmd.url; return; }
     if (cmd.t==="watch"){ closeRemote(); openItem(cmd.key).then(function(){ setTimeout(function(){ var b=document.querySelector("#sh [data-watch][data-free]"); if(b) b.click(); },600); }); return; }
@@ -1089,9 +1406,10 @@ async function sendWatchToTv(key, hasFree){
   tvDo({t:"watch",key},"📺 A abrir na TV…");
 }
 /* lado do telemóvel: liga à TV pelo código */
-function linkPhone(code, quiet){
+function linkPhone(code, quiet, side){
   code = String(code||"").trim().toUpperCase(); if (code.length!==4) return false;
-  LINK.phone = new Relay(code, function(m){ if (m.t==="hi") toast("✅ TV encontrada"); });
+  if (side){ LINK.phone = new Relay(code, function(m){ if (m.t==="np"){ TV.np=m; TV.npAt=Date.now(); updNp(); } }); LINK.phone.send({t:"hello"}); return true; }
+  LINK.phone = new Relay(code, function(m){ if (m.t==="hi") toast("✅ TV encontrada"); else if (m.t==="np"){ TV.np=m; TV.npAt=Date.now(); updNp(); } });
   LINK.phone.send({t:"hello"});
   TV.connected = {kind:"cloud", code:code, name:"TV "+code}; st.set("lf_tv2", TV.connected); updTvBtn();
   if (!quiet) toast("📺 Ligado à TV "+code);
@@ -1138,6 +1456,8 @@ vid.addEventListener("ended",()=>{ if(cur){ delete prog[cur.id]; st.set("lumin_f
 vid.addEventListener("error",()=>{ if(!cur) return; $("#player").classList.remove("load"); toast("Não foi possível carregar o filme."); });
 ["mousemove","touchstart","keydown"].forEach(e=>$("#player").addEventListener(e,wake,{passive:true}));
 $("#back").onclick=closePlayer;
+$("#ytback").onclick=closeYt;
+["play","pause","seeked","ended"].forEach(ev=>vid.addEventListener(ev,()=>ytReport()));
 
 /* ================= eventos ================= */
 function setTab(){ document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.tab===tab)); }
@@ -1149,8 +1469,14 @@ $("#freeT").classList.toggle("on",freeOnly);
 $("#freeT").onclick=()=>{ freeOnly=!freeOnly; st.set("lf_free",freeOnly); $("#freeT").classList.toggle("on",freeOnly); toast(freeOnly?"A mostrar só o que é grátis em Portugal":"A mostrar tudo (inclui pagos)"); render(); };
 let qT; $("#q").addEventListener("input",()=>{ clearTimeout(qT); qT=setTimeout(render,350); });
 document.addEventListener("click",e=>{
-  const t=e.target.closest("[data-tvwatchkey],[data-linkgo],[data-gtvapp],[data-gtvwatch],[data-cats],[data-catsclose],[data-freetoggle],[data-diag],[data-rback],[data-mood],[data-nav],[data-cast],[data-tvplay],[data-tvopen],[data-k],[data-devpick],[data-rescan],[data-bridge],[data-lgopen],[data-tvforget],[data-tvserver],[data-castpick],[data-rclose],[data-iahide],[data-iaplay],[data-open],[data-more],[data-play],[data-restart],[data-close],[data-trailer],[data-watch],[data-fav]"); if(!t) return;
+  const t=e.target.closest("[data-ytplay],[data-tvyt],[data-ythide],[data-rmode],[data-launch],[data-npa],[data-tvwatchkey],[data-linkgo],[data-gtvapp],[data-gtvwatch],[data-cats],[data-catsclose],[data-freetoggle],[data-diag],[data-rback],[data-mood],[data-nav],[data-cast],[data-tvplay],[data-tvopen],[data-k],[data-devpick],[data-rescan],[data-bridge],[data-lgopen],[data-tvforget],[data-tvserver],[data-castpick],[data-rclose],[data-iahide],[data-iaplay],[data-open],[data-more],[data-play],[data-restart],[data-close],[data-trailer],[data-watch],[data-fav]"); if(!t) return;
   const d=t.dataset;
+  if (d.ytplay) return ytPlay(d.ytplay, !!d.restart);
+  if (d.tvyt){ const x=YT_BY_ID.get(d.tvyt); return tvDo({t:"yt",id:d.tvyt,title:x?ytClean(x[1]):""},"📺 A abrir na TV"); }
+  if (d.ythide){ ytHidden.add(d.ythide); st.set("lf_yt_hidden",[...ytHidden]); closeSheet(); toast("Escondido. Não volta a aparecer."); return render(); }
+  if (d.rmode){ RM.mode=d.rmode; st.set("lf_rmode",RM.mode); return renderRemote(); }
+  if (d.launch) return launchOnTv(d.launch);
+  if (d.npa){ buzz(14); return tvMedia(d.npa, d.v); }
   if (d.cats!==undefined) return openCats();
   if (d.catsclose!==undefined) return closeCats();
   if (d.freetoggle!==undefined){ closeCats(); return $("#freeT").click(); }
@@ -1161,13 +1487,13 @@ document.addEventListener("click",e=>{
   else if (d.tvopen) return tvDo({t:"open",key:d.tvopen},"📺 Aberto na TV");
   else if (d.k){ const k=d.k; const c=TV.connected;
     if (c && (c.kind==="lumin"||c.kind==="web") && k==="home") tvDo({t:"home"}); else if (c && (c.kind==="lumin"||c.kind==="web") && k==="search") tvDo({t:"search"}); else tvDo({t:"key",k});
-    try{navigator.vibrate&&navigator.vibrate(12)}catch{} return; }
+    if (!RM.ptr) buzz(15); RM.ptr=false; return; }
   else if (d.devpick!==undefined) return pickDevice(JSON.parse(d.devpick));
   else if (d.tvwatchkey){ sendWatchToTv(d.tvwatchkey, !!d.hasfree); return; }
   else if (d.linkgo!==undefined){ const v=$("#lkc").value; if(!linkPhone(v)) toast("O código tem 4 letras/números"); else renderRemote(); return; }
   else if (d.gtvapp){ tvDo({t:"link",url:d.gtvapp},"📺 A abrir na TV"); return; }
   else if (d.gtvwatch!==undefined){ gtvWatch(d.gtvwatch, d.prov); return; }
-  else if (d.tvforget!==undefined){ TV.connected=null; st.set("lf_tv2",null); updTvBtn(); return openRemote(); }
+  else if (d.tvforget!==undefined){ TV.connected=null; TV.cloud=null; TV.np=null; st.set("lf_tv2",null); st.set("lf_tvcloud",null); updTvBtn(); return openRemote(); }
   else if (d.diag!==undefined){ $("#remote").innerHTML = `<div class="rm-h"><button class="ib" data-rback>←</button><h2>🩺 Diagnóstico</h2><button class="ib" data-diag>↻</button></div>
       <pre style="white-space:pre-wrap;font-size:11px;line-height:1.45;color:#ddd;background:#ffffff0a;border:1px solid #ffffff14;border-radius:12px;padding:12px">${esc(N()?.diag?.()||"Sem registos.")}</pre>`; return; }
   else if (d.rback!==undefined) return renderRemote();
@@ -1193,6 +1519,11 @@ $("#sheet").addEventListener("click",e=>{ if(e.target.id==="sheet") closeSheet()
 /* Comando da TV */
 document.addEventListener("keydown",e=>{
   if (e.key==="Escape"||e.key==="GoBack"||(e.key==="Backspace"&&e.target.tagName!=="INPUT")){ if(window.luminBack()) e.preventDefault(); return; }
+  if (ytOn()){
+    if(e.key==="ArrowRight") mediaCmd("ffw"); else if(e.key==="ArrowLeft") mediaCmd("rew");
+    else if(e.key==="Enter"||e.key===" "||e.key==="MediaPlayPause"){ mediaCmd("playpause"); e.preventDefault(); }
+    return;
+  }
   if ($("#player").classList.contains("on")){
     if(e.key==="ArrowRight") vid.currentTime+=10; else if(e.key==="ArrowLeft") vid.currentTime-=10;
     else if(e.key==="Enter"||e.key===" "){ vid.paused?vid.play():vid.pause(); e.preventDefault(); }
@@ -1215,6 +1546,7 @@ document.addEventListener("keydown",e=>{
 window.luminBack=()=>{
   if($("#cats").classList.contains("on")){ closeCats(); return true; }
   if($("#remote").classList.contains("on")){ closeRemote(); return true; }
+  if(ytOn()){ closeYt(); return true; }
   if($("#player").classList.contains("on")){ closePlayer(); return true; }
   if($("#sheet").classList.contains("on")){ closeSheet(); return true; }
   if($("#q").value){ $("#q").value=""; render(); return true; }
@@ -1225,7 +1557,7 @@ window.luminBack=()=>{
 /* página de pesquisa: categorias para explorar */
 const TILE_C = [["#7c2d12","#1c0a05"],["#1e3a8a","#0a1022"],["#065f46","#03140f"],["#6b21a8","#160622"],["#9f1239","#22050c"],["#854d0e","#1d1203"],["#0e7490","#04161b"],["#374151","#0b0d10"]];
 function exploreTiles(){
-  const t = [["⚡ Sem login","nav:nologin","⚡"],["🎄 Natal","nav:natal","🎄"],["📼 Arquivo livre","nav:arquivo","📼"],["▶ Toca já","nav:lumin","🎬"],
+  const t = [["▶ Grátis na LUMIN","nav:gratis","🎬"],["⚡ Sem login","nav:nologin","⚡"],["🎄 Natal","nav:natal","🎄"],["📼 Arquivo livre","nav:arquivo","📼"],["▶ Toca já","nav:lumin","🎬"],
     ...MOODS.map((m,i)=>[m[0].replace(/^\S+\s/,""),"mood:"+i,m[0].split(" ")[0]]).filter((x,i)=>i>0 && !/Natal/.test(x[0]))];
   return `<div class="tiles">${t.map((x,i)=>{const c=TILE_C[i%TILE_C.length];const [k,v]=x[1].split(":");
     return `<button class="tile" style="--c1:${c[0]};--c2:${c[1]}" ${k==="nav"?`data-nav="${v}"`:`data-mood="${v}"`}>${esc(x[0])}<span>${x[2]}</span></button>`}).join("")}</div>`;
@@ -1236,11 +1568,11 @@ function renderSearchHome(){
   discover("movie",{with_watch_providers:NOLOGIN_IDS,with_watch_monetization_types:FREE,"vote_count.gte":50}).then(d=>{ const el=$("#r-sp"); if(el) el.innerHTML=d.results.filter(x=>x.poster_path).map(x=>card({...norm(x,"movie"),nologin:true})).join(""); }).catch(()=>{});
 }
 function renderMe(){
-  const cont = luminItems().filter(it=>{const p=prog[it.id];const f=LUMIN_FILMS.find(x=>x.id===it.id);return p&&p.t>20&&p.t<f.dur-30});
+  const cont = [...ytCont(), ...luminItems().filter(it=>{const p=prog[it.id];const f=LUMIN_FILMS.find(x=>x.id===it.id);return p&&p.t>20&&p.t<f.dur-30})];
   $("#main").innerHTML = `<div class="me-h"><div class="av">L</div><div><b>A minha LUMIN</b><div style="color:var(--mut);font-size:13px">Grátis · sem conta · ${myList.length} na lista</div></div></div>
     <div class="tiles">
       <button class="tile" style="--c1:#854d0e;--c2:#1d1203" data-nav="tvremote">TV e comando<span>📺</span></button>
-      <button class="tile" style="--c1:#065f46;--c2:#03140f" data-nav="lumin">Toca já<span>🎬</span></button>
+      <button class="tile" style="--c1:#065f46;--c2:#03140f" data-nav="gratis">Grátis na LUMIN<span>🎬</span></button>
       <button class="tile" style="--c1:#1e3a8a;--c2:#0a1022" data-nav="arquivo">Arquivo livre<span>📼</span></button>
       <button class="tile" style="--c1:#374151;--c2:#0b0d10" data-cats>Categorias<span>☰</span></button>
     </div><div style="height:20px"></div>`
@@ -1251,7 +1583,7 @@ function renderMe(){
 function openCats(){
   const c=$("#cats"); c.classList.add("on");
   c.innerHTML = `<button class="cl" data-nav="home">Início</button><button class="cl" data-nav="tv">Séries</button><button class="cl" data-nav="movie">Filmes</button>
-    <button class="cl" data-nav="nologin">⚡ Sem login</button><button class="cl" data-nav="natal">🎄 Natal</button><button class="cl" data-nav="arquivo">📼 Arquivo livre</button><button class="cl" data-nav="lumin">▶ Toca já</button>
+    <button class="cl" data-nav="gratis">▶ Grátis na LUMIN</button><button class="cl" data-nav="nologin">⚡ Sem login</button><button class="cl" data-nav="natal">🎄 Natal</button><button class="cl" data-nav="arquivo">📼 Arquivo livre</button><button class="cl" data-nav="lumin">▶ Toca já</button>
     <h3>Géneros e ambientes</h3>${MOODS.map((m,i)=>`<button class="cl" data-mood="${i}">${m[0]}</button>`).join("")}
     <h3>Opções</h3><button class="cl" data-freetoggle>${freeOnly?"✓ ":""}Mostrar só o que é grátis</button>
     <button class="x" data-catsclose>✕</button>`;
@@ -1263,7 +1595,7 @@ function closeCats(){ $("#cats").classList.remove("on"); }
 function nav(where){
   closeCats();
   if (where==="tvremote"){ openRemote(); return; }
-  if (where===tab && ["tv","movie","nologin","natal","arquivo","lumin"].includes(where)) where="home"; // tocar no chip ativo volta ao início
+  if (where===tab && ["tv","movie","nologin","natal","arquivo","lumin","gratis"].includes(where)) where="home"; // tocar no chip ativo volta ao início
   document.querySelectorAll("nav.bn button").forEach(b=>b.classList.toggle("on",b.dataset.nav===where || (where!=="home"&&where!=="search"&&where!=="me"&&b.dataset.nav==="home")));
   closeSheet(); closeRemote();
   tab = where; $("#q").value=""; setTab(); render();

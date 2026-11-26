@@ -10,13 +10,15 @@ def genAssets = layout.buildDirectory.dir('generated/lumin-assets')
 tasks.register('generateLuminAssets') {
     inputs.file(rootProject.file('web/index.template.html'))
     inputs.file(rootProject.file('catalog.json'))
+    inputs.file(rootProject.file('youtube.json'))
     inputs.property('token', tmdbToken)
     outputs.dir(genAssets)
     doLast {
         if (!tmdbToken) throw new GradleException('Falta o token TMDB: define TMDB_TOKEN ou tmdb.token em local.properties')
         def html = rootProject.file('web/index.template.html').getText('UTF-8')
         def cat = rootProject.file('catalog.json').getText('UTF-8').replaceAll(/\s*\n\s*/, '')
-        html = html.replace('/*CATALOG*/[]', cat).replace('__TMDB_TOKEN__', tmdbToken)
+        def yt = rootProject.file('youtube.json').getText('UTF-8').trim()
+        html = html.replace('/*CATALOG*/[]', cat).replace('/*YOUTUBE*/{"channels":[],"items":[]}', yt).replace('__TMDB_TOKEN__', tmdbToken)
         def out = genAssets.get().file('index.html').asFile
         out.parentFile.mkdirs(); out.setText(html, 'UTF-8')
     }
@@ -29,8 +31,8 @@ android {
         applicationId 'pt.luminai.filmes'
         minSdk 21
         targetSdk 34
-        versionCode 14
-        versionName '3.5'
+        versionCode 15
+        versionName '4.0'
     }
     sourceSets { main { assets.srcDirs += [genAssets.get().asFile] } }
     signingConfigs {
